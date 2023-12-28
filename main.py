@@ -5,6 +5,20 @@ import moderngl
 import numpy as np
 
 
+def perspective_matrix(fov, aspect_ratio, near, far):
+    fov_rad = np.radians(fov)
+    f = 1.0 / np.tan(fov_rad / 2.0)
+    z_range = near - far
+
+    perspective_matrix = np.array([
+        [f / aspect_ratio, 0, 0, 0],
+        [0, f, 0, 0],
+        [0, 0, (far + near) / z_range, 2 * far * near / z_range],
+        [0, 0, -1, 0]
+    ])
+
+    return perspective_matrix
+
 def surf_to_texture(surf):
     tex = ctx.texture(surf.get_size(), 4)
     tex.filter = (moderngl.NEAREST, moderngl.NEAREST)
@@ -36,21 +50,19 @@ prog['iTime'].value =  pygame.time.get_ticks()/1000
 # prog['iFrame'].value =  0
 # prog['iMouse'].value =  (0, 0, 0, 0)
 
-fNear = 0.1
-fFar = 10000.0
+fFar = 1000.0
+fNear = 1
 fFov = 90.0
 fAspectRatio = height / width
-fFovRad = 1 / np.tan(fFov *  0.5 / 180.0 * np.pi)
 
-matProj = np.zeros((4, 4))
+matProj = perspective_matrix(fFov, fAspectRatio, fNear, fFar)
 
-matProj[0][0] = fAspectRatio * fFovRad
-matProj[1][1] = fFovRad
-matProj[2][2] = fFar / (fFar - fNear)
-matProj[3][2] = (-fFar * fNear) / (fFar - fNear)
-matProj[2][3] = 1.0
+# nMatProj = []
+# for y in range(len(matProj)):
+#     for x in range(len(matProj[y])):
+#         nMatProj.append(matProj[y][x]) 
 
-prog['matProj'].value =  matProj.reshape((16))
+prog['matProj'].value = matProj.reshape((16))
 
 cube = ctx.buffer(struct.pack('108f',
 	0.0, 0.0, 0.0,    0.0, 1.0, 0.0,    1.0, 1.0, 0.0,
@@ -69,8 +81,17 @@ cube = ctx.buffer(struct.pack('108f',
 	0.0, 1.0, 0.0,    1.0, 1.0, 1.0,    1.0, 1.0, 0.0,
                                                     
 	1.0, 0.0, 1.0,    0.0, 0.0, 1.0,    0.0, 0.0, 0.0,
-	1.0, 0.0, 1.0,    0.0, 0.0, 0.0,    1.0, 0.0, 0.0,
+	1.0, 0.0, 1.0,    0.0, 0.0, 0.0,    1.0, 0.0, 0.0
 ))
+
+cubeAngle = 0
+
+# cube = ctx.buffer(struct.pack('12f',
+# 	0.5, -0.5, -0.5,
+#     0.5, -0.5, 0.5,
+#     -0.5, 0.5, -0.5,
+#     -0.5, 0.5, 0.5
+# ))
 
 # Put everything together
 vao = ctx.vertex_array(prog, [(cube, '3f', 'vert')])
@@ -80,12 +101,12 @@ while True:
         if event.type == pygame.QUIT:
             pygame.quit()
             sys.exit()
-
-    ctx.clear(0, 0, 0)
-    prog['iTime'].value =  pygame.time.get_ticks()/1000
+    ctx.clear(30/255, 30/255, 60/255)
+    prog['iTime'].value = pygame.time.get_ticks()/1000
+    prog['angle'].value = pygame.time.get_ticks()/1000
     # prog['iFrame'].value +=  1
     # prog['iMouse'].value =  (pygame.mouse.get_pos()[0] / width, pygame.mouse.get_pos()[1] / height, 0, 0)
-    vao.render(moderngl.LINE_LOOP)
+    vao.render(moderngl.LINE_STRIP)
     
     pygame.display.flip()
 

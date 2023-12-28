@@ -4,72 +4,90 @@ in vec3 vert;
 out vec3 vertPos;
 
 uniform float iTime;
+uniform float angle;
 
 uniform mat4 matProj;
 
-vec3 mult3x4(vec3 v, mat4 m)
-{
-    vec3 u;
-    u.x = m[0].x * v.x + m[1].x * v.y + m[2].x * v.z;
-    u.y = m[0].y * v.x + m[1].y * v.y + m[2].y * v.z;
-    u.z = m[0].z * v.x + m[1].z * v.y + m[2].z * v.z;
-    float w = v.x * m[0][3] + v.y * m[1][3] + v.z * m[2][3] + m[3][3];
-    if (w != 0.0)
-    {
-        u.x /= w;
-        u.y /= w;
-        u.z /= w;
+// uniform float znear;
+// uniform float zfar;
+// uniform float fovy;
+// uniform float ratio;
+
+// mat4 perspective() {
+//     float zmul = (-2.0 * znear * zfar) / (zfar - znear);
+//     float ymul = 1.0 / tan(fovy * 3.14159265 / 360);
+//     float xmul = ymul / ratio;
+
+//     return mat4(
+//         xmul, 0.0, 0.0, 0.0,
+//         0.0, ymul, 0.0, 0.0,
+//         0.0, 0.0, -1.0, -1.0,
+//         0.0, 0.0, zmul, 0.0
+//     );
+// }
+
+vec3 multPointMatrix(vec3 i, mat4 M) 
+{ 
+    //out = in * Mproj;
+    vec3 o;
+    o.x   = i.x * M[0][0] + i.y * M[1][0] + i.z * M[2][0] + /* i.z = 1 */ M[3][0]; 
+    o.y   = i.x * M[0][1] + i.y * M[1][1] + i.z * M[2][1] + /* i.z = 1 */ M[3][1]; 
+    o.z   = i.x * M[0][2] + i.y * M[1][2] + i.z * M[2][2] + /* i.z = 1 */ M[3][2]; 
+    float w = i.x * M[0][3] + i.y * M[1][3] + i.z * M[2][3] + /* i.z = 1 */ M[3][3]; 
+ 
+    // normalize if w is different than 1 (convert from homogeneous to Cartesian coordinates)
+    if (w != 0) { 
+        o.x /= w; 
+        o.y /= w; 
+        o.z /= w; 
     }
-    return u;
+
+    return o; 
+} 
+vec4 perspective(mat4 m, vec4 i) {
+    vec4 o = m * i;
+
+    if (o.w != 0) { 
+        o.x /= o.w; 
+        o.y /= o.w; 
+        o.z /= o.w; 
+    }
+
+    return o;
 }
 
-vec3 mult3x3(vec3 v, mat3 m)
+vec3 mult3x33(vec3 v, mat3 m)
 {
     vec3 u;
-    u.x = m[0].x * v.x + m[1].x * v.y + m[2].x * v.z;
-    u.y = m[0].y * v.x + m[1].y * v.y + m[2].y * v.z;
-    u.z = m[0].z * v.x + m[1].z * v.y + m[2].z * v.z;
+    u.x = m[0][0] * v.x + m[0][1] * v.y + m[0][2] * v.z;
+    u.y = m[1][0] * v.x + m[1][1] * v.y + m[1][2] * v.z;
+    u.z = m[2][0] * v.x + m[2][1] * v.y + m[2][2] * v.z;
     return u;
 }
 
-vec3 rotateX(vec3 v, float angle)
+mat4 rotateX(float angle)
 {
-    vec3 vr;
-    mat3 rotxMatrix = mat3(0.0);
+    mat4 rotxMatrix = mat4(0.0);
     rotxMatrix[0][0]  = 1;
     rotxMatrix[1][1]  = cos(angle);
     rotxMatrix[2][1]  = -sin(angle);
     rotxMatrix[1][2]  = sin(angle);
     rotxMatrix[2][2]  = cos(angle);
 
-    vr = mult3x3(v, rotxMatrix);
-
-    return vr;
+    return rotxMatrix;
 }
 
-vec3 rotateY(vec3 v, float angle)
+mat4 rotateY(float angle)
 {
-    vec3 vr;
-    mat3 rotxMatrix = mat3(0.0);
-    rotxMatrix[0][0]  = 1;
-    rotxMatrix[1][1]  = cos(angle);
-    rotxMatrix[2][1]  = -sin(angle);
-    rotxMatrix[1][2]  = sin(angle);
+    mat4 rotxMatrix = mat4(0.0);
+    rotxMatrix[0][0]  = cos(angle);
+    rotxMatrix[0][2]  = sin(angle);
+    rotxMatrix[1][1]  = 1;
+    rotxMatrix[2][0]  = -sin(angle);
     rotxMatrix[2][2]  = cos(angle);
+    rotxMatrix[3][3]  = 1;
 
-    vr = mult3x3(v, rotxMatrix);
-
-    return vr;
-}
-
-vec3 translate3d(vec3 v, vec3 t)
-{
-    vec3 u;
-    u.x = v.x + t.x;
-    u.y = v.y + t.y;
-    u.z = v.z + t.z;
-
-    return u;
+    return rotxMatrix;
 }
 
 vec3 rotateZ(vec3 v, float angle)
@@ -82,19 +100,44 @@ vec3 rotateZ(vec3 v, float angle)
     rotxMatrix[1][2]  = sin(angle);
     rotxMatrix[2][2]  = cos(angle);
 
-    vr = mult3x3(v, rotxMatrix);
+    vr = mult3x33(v, rotxMatrix);
 
     return vr;
+}
+
+mat4 translate(float x, float y, float z)
+{
+    return mat4(
+        vec4(1.0, 0.0, 0.0, x ),
+        vec4(0.0, 1.0, 0.0, y ),
+        vec4(0.0, 0.0, 1.0, z ),
+        vec4(0.0, 0.0, 0.0, 1.0 )
+    );
+}
+
+
+mat4 scale(float x, float y, float z)
+{
+    return mat4(
+        vec4(  x, 0.0, 0.0, 0.0 ),
+        vec4(0.0,   y, 0.0, 0.0 ),
+        vec4(0.0, 0.0,   z, 0.0 ),
+        vec4(0.0, 0.0, 0.0, 1.0 )
+    );
 }
 
 void main()
 {
     mat4 aaaMatProj = matProj;
-    vec3 vertex;
+    float fTheta = radians(angle);
+    vec4 vertex = vec4(vert, 1.0);
+    float scale = 2;
+    float time = iTime;
 
-    vertex = translate3d(vert, vec3(-0.75, 0, 0));
-    vertex = rotateX(vertex,  iTime);
-    vertex = mult3x4(vertex, matProj);
-    vertPos = vertex;
-    gl_Position = vec4(vertex, 1.0);
+
+    vertex *= translate(0, 0, -0.5);
+    vertex *= rotateX(angle);
+    vertex = vec4(multPointMatrix(vec3(vertex), matProj), 1.0);
+
+    gl_Position = vertex;
 }

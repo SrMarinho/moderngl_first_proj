@@ -7,7 +7,8 @@ uniform float iTime;
 // uniform int iFrame;
 
 void mainImage(out vec4 fragColor, in vec2 fragCoord) {
-    fragColor =  vec4(1, abs(vertPos.z), 1, 1.0);
+    // vec2 pos = (fragCoord.xy * 2 / iResolution.xy) / iResolution.y;
+    fragColor = vec4(1, 1, 1, 1.0);
 }
 
 void main() {
