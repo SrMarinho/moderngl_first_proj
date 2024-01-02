@@ -3,28 +3,18 @@ import struct
 import pygame
 import moderngl
 import numpy as np
+from cube import Cube
 
 
-def perspective_matrix(fov, aspect_ratio, near, far):
-    fov_rad = np.radians(fov)
-    f = 1.0 / np.tan(fov_rad / 2.0)
-    z_range = near - far
-
-    perspective_matrix = np.array([
-        [f / aspect_ratio, 0, 0, 0],
-        [0, f, 0, 0],
-        [0, 0, (far + near) / z_range, 2 * far * near / z_range],
-        [0, 0, -1, 0]
+def create_perspective_matriz(fov, aspect_ratio, near_plane, far_plane):
+    aspect_ratio = height/width
+    tan_half_fovy = np.tan(np.radians(fov * 0.5))
+    return np.array([
+        [1 / (aspect_ratio * tan_half_fovy), 0.0, 0.0, 0.0],
+        [0.0, 1 / (tan_half_fovy), 0.0, 0.0],
+        [0.0, 0.0, (far_plane) / (far_plane - near_plane), -1],
+        [0.0, 0.0, -(far_plane * near_plane) / (far_plane - near_plane), 0.0]
     ])
-
-    return perspective_matrix
-
-def surf_to_texture(surf):
-    tex = ctx.texture(surf.get_size(), 4)
-    tex.filter = (moderngl.NEAREST, moderngl.NEAREST)
-    tex.swizzle = 'BGRA'
-    tex.write(surf.get_view('1'))
-    return tex
 
 
 pygame.init()
@@ -51,50 +41,18 @@ prog['iTime'].value =  pygame.time.get_ticks()/1000
 # prog['iMouse'].value =  (0, 0, 0, 0)
 
 fFar = 1000.0
-fNear = 1
+fNear = 0.1
 fFov = 90.0
 fAspectRatio = height / width
 
-matProj = perspective_matrix(fFov, fAspectRatio, fNear, fFar)
-
-# nMatProj = []
-# for y in range(len(matProj)):
-#     for x in range(len(matProj[y])):
-#         nMatProj.append(matProj[y][x]) 
+matProj = create_perspective_matriz(fFov, fAspectRatio, fNear, fFar)
 
 prog['matProj'].value = matProj.reshape((16))
 
-cube = ctx.buffer(struct.pack('108f',
-	0.0, 0.0, 0.0,    0.0, 1.0, 0.0,    1.0, 1.0, 0.0,
-	0.0, 0.0, 0.0,    1.0, 1.0, 0.0,    1.0, 0.0, 0.0,
-                                                      
-	1.0, 0.0, 0.0,    1.0, 1.0, 0.0,    1.0, 1.0, 1.0,
-	1.0, 0.0, 0.0,    1.0, 1.0, 1.0,    1.0, 0.0, 1.0,
-                                                     
-	1.0, 0.0, 1.0,    1.0, 1.0, 1.0,    0.0, 1.0, 1.0,
-	1.0, 0.0, 1.0,    0.0, 1.0, 1.0,    0.0, 0.0, 1.0,
-                                                      
-	0.0, 0.0, 1.0,    0.0, 1.0, 1.0,    0.0, 1.0, 0.0,
-	0.0, 0.0, 1.0,    0.0, 1.0, 0.0,    0.0, 0.0, 0.0,
-                                                       
-	0.0, 1.0, 0.0,    0.0, 1.0, 1.0,    1.0, 1.0, 1.0,
-	0.0, 1.0, 0.0,    1.0, 1.0, 1.0,    1.0, 1.0, 0.0,
-                                                    
-	1.0, 0.0, 1.0,    0.0, 0.0, 1.0,    0.0, 0.0, 0.0,
-	1.0, 0.0, 1.0,    0.0, 0.0, 0.0,    1.0, 0.0, 0.0
-))
-
-cubeAngle = 0
-
-# cube = ctx.buffer(struct.pack('12f',
-# 	0.5, -0.5, -0.5,
-#     0.5, -0.5, 0.5,
-#     -0.5, 0.5, -0.5,
-#     -0.5, 0.5, 0.5
-# ))
+cube = Cube()
 
 # Put everything together
-vao = ctx.vertex_array(prog, [(cube, '3f', 'vert')])
+vao = ctx.vertex_array(prog, [(ctx.buffer(cube.vertices), '3f', 'vert')])
 
 while True:
     for event in pygame.event.get():
