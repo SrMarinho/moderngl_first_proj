@@ -51,9 +51,9 @@ class Engine:
                 p3 = multM4V4(translationm, p3)
                     
                 #Projetando
-                p1 = multM4V4(projection, p1)
-                p2 = multM4V4(projection, p2)
-                p3 = multM4V4(projection, p3)
+                p1 = multM4V4(self.perspective_matrix, p1)
+                p2 = multM4V4(self.perspective_matrix, p2)
+                p3 = multM4V4(self.perspective_matrix, p3)
                 
                 if p1[3] != 0:
                     p1 /= p1[3] 
@@ -253,7 +253,7 @@ near = 0.1
 far = 1000.0
 
 engine = Engine()
-projection = engine.perspective(fov, width, height, near, far)
+engine.perspective(fov, width, height, near, far)
 
 cube = Cube()
 cube.z = -2
