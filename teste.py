@@ -24,6 +24,7 @@ class Engine:
             scalem = Transform.scale(obj.scale)
             rotatexm = Transform.rotateX(np.radians(obj.angleX))
             rotateym = Transform.rotateY(np.radians(obj.angleY))
+            rotatezm = Transform.rotateZ(np.radians(obj.angleZ))
 
             for triangle in range(len(obj.triangles)):
                 p1 = obj.vertices[obj.triangles[triangle][0]]
@@ -44,6 +45,11 @@ class Engine:
                 p1 = multM4V4(rotateym, p1)
                 p2 = multM4V4(rotateym, p2)
                 p3 = multM4V4(rotateym, p3)
+                
+                #rotação no eixo z
+                p1 = multM4V4(rotatezm, p1)
+                p2 = multM4V4(rotatezm, p2)
+                p3 = multM4V4(rotatezm, p3)
                 
                 #Transladando para a posição no mundo
                 p1 = multM4V4(translationm, p1)
@@ -133,12 +139,6 @@ class Cube:
                   1.0]
     
     def update(self):
-        
-        
-        self.angleX += 1
-        self.angleY += 1
-        
-        
         keys=pg.key.get_pressed()
         if keys[pg.K_UP]:
             self.angleX += 1
@@ -196,6 +196,15 @@ class Transform:
             [-np.sin(angle), 0, np.cos(angle), 0],
             [0,             0,              0, 1]
         ]
+        
+    @staticmethod
+    def rotateZ(angle):
+        return [
+            [np.cos(angle), -np.sin(angle), 0, 0],
+            [np.sin(angle), np.cos(angle), 0, 0],
+            [0,             0,              1, 0],
+            [0,             0,              0, 1]
+        ]
     
     @staticmethod
     def scale(x, y=None, z=None):
@@ -248,9 +257,9 @@ display = pg.Surface((width, height))
 clock = pg.time.Clock()
 
 
-fov = 120.0
+fov = 90
 near = 0.1
-far = 1000.0
+far = 5.0
 
 engine = Engine()
 engine.perspective(fov, width, height, near, far)
@@ -269,7 +278,12 @@ while True:
     screen.fill((40, 40, 50))
 
     engine.update()
+
+    cube.angleX += 1
+    cube.angleY += 1
+
     engine.render(screen)
+    
 
     pg.display.flip()
     clock.tick(60)
