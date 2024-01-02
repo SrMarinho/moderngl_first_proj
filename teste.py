@@ -1,9 +1,17 @@
 import pygame as pg
 import numpy as np
 
+class Engine:
+    def __init__(self) -> None:
+        self.fov
+        self.viewport_width
+        self.viewport_height
+    
+    
+
 class Cube:
     def __init__(self) -> None:
-        self.scale = 60
+        self.scale = 30
         self.angleX = 45
         self.angleY = 0
         self.angleZ = 0
@@ -59,7 +67,8 @@ class Cube:
             self.angleZ -= 1
     
     def render(self, screen):
-        translationm = Transform.translation((width / 2) + self.x, (height / 2) + self.y, self.z)
+        translationm = Transform.translation(0, 0, -5)
+        centerm = Transform.translation(width / 2, height / 2, 0)
         scalem = Transform.scale(cube.scale)
         rotatexm = Transform.rotateX(np.radians(cube.angleX))
         rotateym = Transform.rotateY(np.radians(cube.angleY))
@@ -70,33 +79,36 @@ class Cube:
             p2 = cube.vertices[cube.triangles[triangle][1]]
             p3 = cube.vertices[cube.triangles[triangle][2]]
             
-            p1 = np.matmul(rotatexm, p1)
-            p2 = np.matmul(rotatexm, p2)
-            p3 = np.matmul(rotatexm, p3)
+            p1 = multM4V4(rotatexm, p1)
+            p2 = multM4V4(rotatexm, p2)
+            p3 = multM4V4(rotatexm, p3)
             
-            p1 = np.matmul(rotateym, p1)
-            p2 = np.matmul(rotateym, p2)
-            p3 = np.matmul(rotateym, p3)
-
+            p1 = multM4V4(rotateym, p1)
+            p2 = multM4V4(rotateym, p2)
+            p3 = multM4V4(rotateym, p3)
             
-            # p1 = multM4V4(projection, p1)
-            # p2 = multM4V4(projection, p2)
-            # p3 = multM4V4(projection, p3)
             
+            p1 = multM4V4(translationm, p1)
+            p2 = multM4V4(translationm, p2)
+            p3 = multM4V4(translationm, p3)
                 
-            p1 = np.matmul(scalem, p1)
-            p2 = np.matmul(scalem, p2)
-            p3 = np.matmul(scalem, p3)
+            p1 = multM4V4(projection, p1)
+            p2 = multM4V4(projection, p2)
+            p3 = multM4V4(projection, p3)
             
-            p1 = np.matmul(translationm, p1)
-            p2 = np.matmul(translationm, p2)
-            p3 = np.matmul(translationm, p3)
+            p1 /= p1[3] 
+            p2 /= p2[3]
+            p3 /= p3[3]
             
-            # p1 = p1 + [self.x + width / 2, self.y + height  / 2, self.z, 0]
-            # p2 = p2 + [self.x + width / 2, self.y + height  / 2, self.z, 0]
-            # p3 = p3 + [self.x + width / 2, self.y + height  / 2, self.z, 0]
+            p1 = multM4V4(scalem, p1)
+            p2 = multM4V4(scalem, p2)
+            p3 = multM4V4(scalem, p3)
             
-            if triangle == 7: print(p1)
+            p1 = multM4V4(centerm, p1)
+            p2 = multM4V4(centerm, p2)
+            p3 = multM4V4(centerm, p3)
+            
+            # if triangle == 7: print(p3)
             # break
             Draw.triangle(screen, (255, 255, 255), p1, p2, p3, 1)
 
@@ -155,47 +167,36 @@ class Transform:
             [0, 0, 0, 1]
             ]
         
+    # @staticmethod
+    # def perspective_projection_matriz(fov, aspect_ratio, near_plane, far_plane):
+    #     fovRad = 1.0 / np.tan(np.radians(fov / 2.0))
+    #     return np.array([
+    #         [aspect_ratio * fovRad, 0.0, 0.0, 0.0],
+    #         [0.0, fovRad, 0.0, 0.0],
+    #         [0.0, 0.0, (-far_plane + near_plane) / (far_plane - near_plane), -1],
+    #         [0.0, 0.0, (-2 * far_plane * near_plane) / (far_plane - near_plane), 0.0]
+    #     ])
+        
     @staticmethod
     def perspective_projection_matriz(fov, aspect_ratio, near_plane, far_plane):
-        fovRad = 1.0 / np.tan(np.radians(fov / 2.0))
+        tan_half_fovy = np.tan(np.radians(fov * 0.5))
         return np.array([
-            [aspect_ratio * fovRad, 0.0, 0.0, 0.0],
-            [0.0, fovRad, 0.0, 0.0],
-            [0.0, 0.0, (-far_plane + near_plane) / (far_plane - near_plane), -1],
-            [0.0, 0.0, (-2 * far_plane * near_plane) / (far_plane - near_plane), 0.0]
+            [1 / (aspect_ratio * tan_half_fovy), 0.0, 0.0, 0.0],
+            [0.0, 1 / (tan_half_fovy), 0.0, 0.0],
+            [0.0, 0.0, (far_plane) / (far_plane - near_plane), -1],
+            [0.0, 0.0, -(far_plane * near_plane) / (far_plane - near_plane), 0.0]
         ])
     
     @staticmethod
     def getXYZW():    
         return [1, 1, 1, 1]
-    
-    
-        
-def MultiplyMatrixVector(m, i):
-    o = np.zeros((4))
-    o[0] = i[0] * m[0][0] + i[1] * m[1][0] + i[2] * m[2][0] + i[3] * m[3][0]
-    o[1] = i[0] * m[0][1] + i[1] * m[1][1] + i[2] * m[2][1] + i[3] * m[3][1]
-    o[2] = i[0] * m[0][2] + i[1] * m[1][2] + i[2] * m[2][2] + i[3] * m[3][2]
-    o[3] = i[0] * m[0][3] + i[1] * m[1][3] + i[2] * m[2][3] + i[3] * m[3][3]
-    
-    if (o[3] != 0):
-        o[0] /= o[3]
-        o[1] /= o[3]
-        o[2] /= o[3]
-
-    return o
 
 def multM4V4(m, i):
     o = np.zeros((4))
-    o[0] = i[0] * m[0][0] + i[1] * m[0][1] + i[2] * m[0][2] + i[3] * m[0][3]
-    o[1] = i[0] * m[1][0] + i[1] * m[1][1] + i[2] * m[1][2] + i[3] * m[1][3]
-    o[2] = i[0] * m[2][0] + i[1] * m[2][1] + i[2] * m[2][2] + i[3] * m[2][3]
-    o[3] = i[0] * m[3][0] + i[1] * m[3][1] + i[2] * m[3][2] + i[3] * m[3][3]
     
-    if (o[2] != 0):
-        o[0] /= o[2]
-        o[1] /= o[2]
-
+    for row in range(4):
+        for col in range(4):
+            o[row] += m[row][col] * i[col]
     return o
 
 pg.init()
@@ -209,28 +210,24 @@ clock = pg.time.Clock()
 
 cube = Cube()
 
-fov = 90
+fov = 120
 near = 0.1
 far = 1000.0
 aspect_ratio = height / width
 
 projection = Transform.perspective_projection_matriz(fov, aspect_ratio, near, far)
 
-# print(projection)
-
-
 while True:
+    # break
     for event in pg.event.get():
         if event.type == pg.QUIT:
             pg.quit()
             
     screen.fill((40, 40, 50))
     
-
     cube.update()
     
     cube.render(screen)
 
     pg.display.flip()
-
     clock.tick(60)
