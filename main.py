@@ -64,7 +64,7 @@ while True:
     prog['angle'].value = pygame.time.get_ticks()/1000
     # prog['iFrame'].value +=  1
     # prog['iMouse'].value =  (pygame.mouse.get_pos()[0] / width, pygame.mouse.get_pos()[1] / height, 0, 0)
-    vao.render(moderngl.LINE_STRIP)
+    vao.render(moderngl.LINE_LOOP)
     
     pygame.display.flip()
 

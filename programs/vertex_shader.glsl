@@ -95,16 +95,14 @@ mat4 scale(float x, float y, float z)
 void main()
 {
     mat4 aaaMatProj = matProj;
-    float fTheta = radians(angle * 20);
+    float fTheta = radians(angle * 30);
     vec4 vertex = vec4(vert, 1.0);
     float size = 0.2;
     float time = iTime;
 
-
-    vertex = multM4V4(rotateX(fTheta), vertex);
-    vertex = multM4V4(translate(0, 0, -0.5), vertex);
-    // vertex = multM4V4(rotateY(fTheta), vertex);
-    vertex = multM4V4(matProj, vertex);
+    mat4 transformations = translate(-0.5, -0.5, -0.5) * rotateY(fTheta) /* * rotateX(fTheta)*/;
+    vertex = multM4V4(transformations, vertex);
+    vertex = multM4V4(matProj, vertex) * scale(size, size, size);
 
     if (vertex[3] != 0) {
         vertex[0] /= vertex[3];
@@ -112,7 +110,7 @@ void main()
         vertex[2] /= vertex[3];
     }
 
-    vertex *= scale(size, size, size);
+    // vertex = multM4V4(scale(size, size, size), vertex);
 
     gl_Position = vertex;
 }
