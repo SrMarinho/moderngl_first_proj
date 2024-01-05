@@ -8,8 +8,7 @@ uniform float iTime;
 
 void mainImage(out vec4 fragColor, in vec3 fragCoord) {
     // vec2 pos = (fragCoord.xy * 2 / iResolution.xy) / iResolution.y;
-    float depth = fragCoord.z / vertPos.w;
-    fragColor = vec4(1 * depth, 1 * depth, 1 * depth, 1.0);
+    fragColor = vec4(1, 1, 1, 1.0);
 }
 
 void main() {

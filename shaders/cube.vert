@@ -1,7 +1,7 @@
 #version 330
 
 in vec3 vert;
-out vec4 vertPos;
+out vec3 vertPos;
 
 uniform float iTime;
 uniform float angle;
@@ -98,12 +98,11 @@ void main()
     float aaaaangle = angle;
     float fTheta = radians(angle * 30);
     vec4 vertex = vec4(vert, 1.0);
-    float size = 0.3;
+    float size = 0.4;
     float time = iTime;
 
-    mat4 transformations = translate(-0.5, -0.5, -0.5)  * rotateY(fTheta) * rotateX(fTheta) * translate(0.0, 0.0, sin(fTheta));
+    mat4 transformations = translate(-0.5, -0.5, -0.5)  * rotateY(fTheta) /* rotateX(fTheta)*/;
     vertex = multM4V4(transformations, vertex);
-    vertPos = vertex;
     vertex = multM4V4(matProj, vertex) * scale(size, size, size);
 
     if (vertex[3] != 0) {

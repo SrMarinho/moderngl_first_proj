@@ -12,44 +12,24 @@ class Cube:
         self.x = 0
         self.y = 0
         self.z = 0
-        
 
-        # cube = []
-        # for z in range(2):
-        #     for y in range(2):
-        #         for x in range(2):
-        #             # cube.append([-1 if x == 0 else 1, -1 if y == 0 else 1, -1 if z == 0 else 1, 1.0])
-        #             cube.append([x, y, z, 1.0])
-
-        # self.vertices = np.array(cube)
-
-        # # [[0, 0, 0, 1.0], [1, 0, 0, 1.0], [0, 1, 0, 1.0], [1, 1, 0, 1.0], [0, 0, 1, 1.0], [1, 0, 1, 1.0], [0, 1, 1, 1.0], [1, 1, 1, 1.0]]
-        # self.triangles = [
-        #     [0, 2, 3], [0, 3, 1],
-        #     [1, 3, 7], [1, 7, 5],
-        #     [2, 6, 7], [2, 7, 3],
-        #     [4, 2, 0], [4, 6, 2],
-        #     [5, 6, 4], [5, 7, 6],
-        #     [5, 0, 1], [5, 4, 0],
-        # ]
-        
         self.vertices = struct.pack('108f',
-		    0.0, 0.0, 0.0,    0.0, 1.0, 0.0,    1.0, 1.0, 0.0,
+		    0.0, 1.0, 0.0,    0.0, 0.0, 0.0,    1.0, 1.0, 0.0,
 		    0.0, 0.0, 0.0,    1.0, 1.0, 0.0,    1.0, 0.0, 0.0,
                                                                   
-		    1.0, 0.0, 0.0,    1.0, 1.0, 0.0,    1.0, 1.0, 1.0,
+		    1.0, 1.0, 0.0,    1.0, 0.0, 0.0,    1.0, 1.0, 1.0,
 		    1.0, 0.0, 0.0,    1.0, 1.0, 1.0,    1.0, 0.0, 1.0,
                                                                  
-		    1.0, 0.0, 1.0,    1.0, 1.0, 1.0,    0.0, 1.0, 1.0,
+		    1.0, 1.0, 1.0,    1.0, 0.0, 1.0,    0.0, 1.0, 1.0,
 		    1.0, 0.0, 1.0,    0.0, 1.0, 1.0,    0.0, 0.0, 1.0,
-                                                                  
-		    0.0, 0.0, 1.0,    0.0, 1.0, 1.0,    0.0, 1.0, 0.0,
+                                                            
+		    0.0, 1.0, 1.0,    0.0, 0.0, 1.0,    0.0, 1.0, 0.0,
 		    0.0, 0.0, 1.0,    0.0, 1.0, 0.0,    0.0, 0.0, 0.0,
                                                                    
-		    0.0, 1.0, 0.0,    0.0, 1.0, 1.0,    1.0, 1.0, 1.0,
-		    0.0, 1.0, 0.0,    1.0, 1.0, 1.0,    1.0, 1.0, 0.0,
+		    0.0, 1.0, 0.0,    1.0, 1.0, 0.0,    0.0, 1.0, 1.0,
+		    1.0, 1.0, 0.0,    0.0, 1.0, 1.0,    1.0, 1.0, 1.0,
                                                                 
-		    1.0, 0.0, 1.0,    0.0, 0.0, 1.0,    0.0, 0.0, 0.0,
+		    0.0, 0.0, 1.0,    1.0, 0.0, 1.0,    0.0, 0.0, 0.0,
 		    1.0, 0.0, 1.0,    0.0, 0.0, 0.0,    1.0, 0.0, 0.0,
         )
         
@@ -57,6 +37,46 @@ class Cube:
         #           -sum(p[1] for p in self.vertices) / len(self.vertices),
         #           -sum(p[2] for p in self.vertices) / len(self.vertices),
         #           1.0]
+        
+    @staticmethod
+    def get_data(vertices, indices):
+        data = [vertices[ind] for triangle in indices for ind in triangle]
+        return np.array(data, dtype='f4')    
+    
+    def get_vertex_data(self):
+        vertices = [(-1, -1, 1), ( 1, -1,  1), (1,  1,  1), (-1, 1,  1),
+                    (-1, 1, -1), (-1, -1, -1), (1, -1, -1), ( 1, 1, -1)]
+
+        indices = [(0, 2, 3), (0, 1, 2),
+                    (1, 7, 2), (1, 6, 7),
+                    (6, 5, 4), (4, 7, 6),
+                    (3, 4, 5), (3, 5, 0),
+                    (3, 7, 4), (3, 2, 7),
+                    (0, 6, 1), (0, 5, 6)]
+        vertex_data = self.get_data(vertices, indices)
+
+        tex_coord_vertices = [(0, 0), (1, 0), (1, 1), (0, 1)]
+        tex_coord_indices = [(0, 2, 3), (0, 1, 2),
+                                (0, 2, 3), (0, 1, 2),
+                                (0, 1, 2), (2, 3, 0),
+                                (2, 3, 0), (2, 0, 1),
+                                (0, 2, 3), (0, 1, 2),
+                                (3, 1, 2), (3, 0, 1),]
+        tex_coord_data = self.get_data(tex_coord_vertices, tex_coord_indices)
+
+        # normals = [( 0, 0, 1) * 6,
+        #             ( 1, 0, 0) * 6,
+        #             ( 0, 0,-1) * 6,
+        #             (-1, 0, 0) * 6,
+        #             ( 0, 1, 0) * 6,
+        #             ( 0,-1, 0) * 6,]
+        
+        # print(normals)
+        # normals = np.array(normals, dtype='f4').reshape(36, 3)
+
+        # vertex_data = np.hstack([normals, vertex_data])
+        # vertex_data = np.hstack([tex_coord_data, vertex_data])
+        return vertex_data
     
     def update(self):
         keys=pg.key.get_pressed()
