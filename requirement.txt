@@ -1,0 +1,4 @@
+#pip install -r .\requirement.txt
+numpy==1.26.2
+moderngl==5.9.0
+pygame==2.5.2

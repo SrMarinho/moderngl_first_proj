@@ -1,89 +1,70 @@
 import sys
-import struct
-import pygame
+import pygame as pg
 import moderngl
 import numpy as np
-from cube import Cube
+from mesh import Mesh
+from scene import Scene
+from scene_renderer import SceneRenderer
 
+class GraphicsEngine:
+    def __init__(self, width=1280, height=720) -> None:
+        pg.init()
 
-def create_perspective_matriz(fov, aspect_ratio, near_plane, far_plane):
-    aspect_ratio = height/width
-    tan_half_fovy = np.tan(np.radians(fov * 0.5))
-    return np.array([
-        [1 / (aspect_ratio * tan_half_fovy), 0.0, 0.0, 0.0],
-        [0.0, 1 / (tan_half_fovy), 0.0, 0.0],
-        [0.0, 0.0, (far_plane) / (far_plane - near_plane), -1],
-        [0.0, 0.0, -(far_plane * near_plane) / (far_plane - near_plane), 0.0]
-    ])
+        self.width, self.height = width, height
+
+        self.screen = pg.display.set_mode((width, height), pg.OPENGL | pg.DOUBLEBUF, display=1)
+        self.display = pg.Surface((self.width, self.height))
+        self.ctx = moderngl.create_context()
+        self.ctx.front_face = 'ccw'
+        self.ctx.enable(flags=moderngl.DEPTH_TEST | moderngl.CULL_FACE)
+        self.clock = pg.time.Clock()
+        self.FPS = 60
+        
+        self.time = pg.time.get_ticks()/1000
+        self.delta_time = 0
+        
+        self.fov = 90
+        self.aspect_ratio = width / height
+        self.near = 0.1
+        self.far = 1000
+        
+        self.mesh = Mesh(self)
+        
+        self.scene = Scene(self)
+        
+        self.scene_renderer = SceneRenderer(self)
+        
     
-def get_data(vertices, indices):
-    data = [vertices[ind] for triangle in indices for ind in triangle]
-    return np.array(data, dtype='f4')
-
-vertices = [(-1, -1, 1), ( 1, -1,  1), (1,  1,  1), (-1, 1,  1),
-            (-1, 1, -1), (-1, -1, -1), (1, -1, -1), ( 1, 1, -1)]
-
-indices = [(0, 2, 3), (0, 1, 2),
-            (1, 7, 2), (1, 6, 7),
-            (6, 5, 4), (4, 7, 6),
-            (3, 4, 5), (3, 5, 0),
-            (3, 7, 4), (3, 2, 7),
-            (0, 6, 1), (0, 5, 6)]
-vertex_data = get_data(vertices, indices)
-
-pygame.init()
-
-width, height = 400, 400
-
-screen = pygame.display.set_mode((width, height), pygame.OPENGL | pygame.DOUBLEBUF, display=1)
-display = pygame.Surface((width, height))
-ctx = moderngl.create_context()
-ctx.front_face = 'cw'
-ctx.enable(flags=moderngl.DEPTH_TEST | moderngl.CULL_FACE)
-
-clock = pygame.time.Clock()
-
-with open(f'./programs/vertex_shader.glsl', 'r') as vert_file:
-    vert_shader = vert_file.read()
+    def events(self):
+        for event in pg.event.get():
+            if event.type == pg.QUIT or (event.type == pg.KEYDOWN and event.key == pg.K_ESCAPE):
+                pg.quit()
+                sys.exit()
     
-with open(f'./programs/fragment_shader.glsl', 'r') as frag_file:
-    frag_shader = frag_file.read()
-
-prog = ctx.program(vertex_shader=vert_shader, fragment_shader=frag_shader)
-
-prog['iResolution'].value = (width, height)
-prog['iTime'].value =  pygame.time.get_ticks()/1000
-# prog['iFrame'].value =  0
-# prog['iMouse'].value =  (0, 0, 0, 0)
-
-fFar = 1000.0
-fNear = 0.1
-fFov = 90.0
-fAspectRatio = height / width
-
-matProj = create_perspective_matriz(fFov, fAspectRatio, fNear, fFar)
-
-prog['matProj'].value = matProj.reshape((16))
-
-cube = Cube()
-
-# Put everything together
-vao = ctx.vertex_array(prog, [(ctx.buffer(cube.vertices), '3f', 'vert')])
-
-while True:
-    for event in pygame.event.get():
-        if event.type == pygame.QUIT:
-            pygame.quit()
-            sys.exit()
-    ctx.clear(30/255, 30/255, 60/255)
-    prog['iTime'].value = pygame.time.get_ticks()/1000
-    prog['angle'].value = pygame.time.get_ticks()/1000
-    # prog['iFrame'].value +=  1
-    # prog['iMouse'].value =  (pygame.mouse.get_pos()[0] / width, pygame.mouse.get_pos()[1] / height, 0, 0)
-    vao.render(moderngl.TRIANGLE_STRIP | moderngl.CULL_FACE)
+    def update(self):
+        self.time = pg.time.get_ticks()/1000
+        self.scene.update()
     
-    pygame.display.flip()
-
-    clock.tick(60)
+    def render(self):
+        self.ctx.clear(30/255, 30/255, 60/255)
+        
+        self.scene_renderer.render()
+        
+        pg.display.flip()
+        
+    def get_time(self):
+        self.time = pg.time.get_ticks() * 0.001
     
-    pygame.display.set_caption("FPS: " + str(round(clock.get_fps(), 2)))
+    def run(self):
+        while True:
+            self.get_time()
+            self.events()
+            self.update()
+            self.render()
+            self.delta_time = self.clock.tick(self.FPS)
+            pg.display.set_caption("FPS: " + str(round(self.clock.get_fps(), 2)))
+    
+
+if __name__ == '__main__':
+    app = GraphicsEngine(200, 200)
+    app.run()
