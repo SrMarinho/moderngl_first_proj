@@ -21,7 +21,7 @@ void main() {
     vec3 fragColor = vec3(0.0);
 
     light.color = vec3(0, 1, 1);
-    light.direction = -vec3(-1, -1, -1);
+    light.direction = -vec3(-1, 0, 0);
 
     float brightness = dot(norm, normalize(light.direction));
 

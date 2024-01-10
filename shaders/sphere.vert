@@ -1,6 +1,7 @@
 #version 330
 
-layout (location = 0) in float in_normal_position[6];
+layout (location = 0) in vec3 in_normal;
+layout (location = 1) in vec3 in_position;
 
 out vec3 normal;
 out vec3 vertPos;
@@ -101,8 +102,6 @@ mat4 scale(float x, float y, float z)
 
 void main()
 {
-    vec3 in_normal = vec3(in_normal_position[0], in_normal_position[1], in_normal_position[2]);
-    vec3 in_position = vec3(in_normal_position[3], in_normal_position[4], in_normal_position[5]);
 
     mat4 aaaaproj = m_proj;
     Obj aaaaobj = obj;
@@ -112,7 +111,7 @@ void main()
     vec4 vertex = vec4(in_position, 1.0);
 
     mat4 model_transforms = (
-        translate(obj.position.x, obj.position.y, obj.position.z - 1) *
+        translate(obj.position.x, obj.position.y, obj.position.z - 0.5) *
         scale(obj.scale.x, obj.scale.y, obj.scale.z) *
         rotateZ(radians(obj.rotation.z)) *
         rotateY(radians(obj.rotation.y)) *
@@ -120,7 +119,6 @@ void main()
         translate(-0.5, -0.5, -0.5) *
         1
     );
-
 
     vertex = (
         m_proj *

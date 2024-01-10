@@ -73,54 +73,92 @@ class CubeVBO(BaseVBO):
 class SphereVBO(BaseVBO):
     def __init__(self, ctx):
         super().__init__(ctx)
-        self.format = '6f'
-        self.attribs = ['in_normal_position']
+        self.format = '3f 3f'
+        self.attribs = ['in_normal', 'in_position']        
 
     def get_vertex_data(self):
-        vertices = []
-        normals = []
         
         radius = 1
-        lengthInv = 1.0 / radius
+        vertices = []
         
+        normals = []
+        texCoords = []
+
         sectorCount = 10
-        stackCount = 10
+        stackCount = 5
+
+        x, y, z, xy = 0.0, 0.0, 0.0, 0.0  # vertex position
+        nx, ny, nz, lengthInv = 0.0, 0.0, 0.0, 1.0 / radius  # vertex normal
+        s, t = 0.0, 0.0  # vertex texCoord
+
         sectorStep = 2 * np.pi / sectorCount
         stackStep = np.pi / stackCount
+        sectorAngle, stackAngle = 0.0, 0.0
 
-        for i in range(len(stackCount) + 1):
-            stackAngle = np.pi / 2 - i * stackStep
-            xy = radius * np.cos(stackAngle)
-            z = radius * np.sin(stackAngle)
+        for i in range(stackCount + 1):
+            stackAngle = np.pi / 2 - i * stackStep  # starting from pi/2 to -pi/2
+            xy = radius * np.cos(stackAngle)  # r * cos(u)
+            z = radius * np.sin(stackAngle)  # r * sin(u)
 
-            for j in range(len(sectorCount) + 1):
-                sectorAngle = j * sectorStep 
-                
-                x = xy * np.cos(sectorAngle) 
-                y = xy * np.sin(sectorAngle) 
-                vertices.append(x)
-                vertices.append(y)
-                vertices.append(z)
+            # add (sectorCount+1) self.vertices per stack
+            # first and last self.vertices have the same position and normal, but different tex coords
+            for j in range(sectorCount + 1):
+                sectorAngle = j * sectorStep  # starting from 0 to 2pi
 
+                # vertex position (x, y, z)
+                x = xy * np.cos(sectorAngle)  # r * cos(u) * cos(v)
+                y = xy * np.sin(sectorAngle)  # r * cos(u) * sin(v)
+                vertices.append([round(x, 3), round(y, 3), round(z, 3)])
+
+                # normalized vertex normal (nx, ny, nz)
                 nx = x * lengthInv
                 ny = y * lengthInv
                 nz = z * lengthInv
-                normals.append(nx)
-                normals.append(ny)
-                normals.append(nz)
-                
-        vertex_data = vertices
-        vertex_data = np.hstack(vertex_data, normals)
+                normals.append([nx, ny, nz] * 6)
+
+                # vertex tex coord (s, t) range between [0, 1]
+                s = float(j) / sectorCount
+                t = float(i) / stackCount
+                texCoords.append([s, t])
+
+        # Convert lists to NumPy arrays
+        vertices = np.array(vertices, dtype=np.float32)
+        normals = np.array(normals, dtype=np.float32)
+        texCoords = np.array(texCoords, dtype=np.float32)
+
+        indices = []
+        lineIndices = []
+        k1, k2 = 0, 0
+
+        for i in range(1, 2, 1):
+            k1 = i * (sectorCount + 1)  # beginning of current stack
+            k2 = k1 + sectorCount + 1  # beginning of next stack
+
+            for j in range(sectorCount):
+                # 2 triangles per sector excluding first and last stacks
+                # k1 => k2 => k1+1
+                indices.append([k2, k1, k2 + 1])
+
+                indices.append([k1, k2 + 1, k2])
+
+                # store indices for lines
+                # vertical lines for all stacks, k1 => k2
+                lineIndices.append([k1, k2])
+                if i != 0:  # horizontal lines except 1st stack, k1 => k+1
+                    lineIndices.append([k1, k1 + 1])
+
+                k1 += 1
+                k2 += 1
+
+        # Convert lists to NumPy arrays
+        indices = np.array(indices, dtype=np.int32)
+        lineIndices = np.array(lineIndices, dtype=np.int32)
         
+        vertex_data = self.get_data(vertices=vertices, indices=indices)
+        
+        # Convert lists to NumPy arrays
+        # indices = np.array(indices, dtype=np.int32)       
+        # vertex_data = np.hstack([normals, vertices])
+        # vertex_data = self.get_data(vertices, indices)
+        # print(vertex_data)
         return vertex_data
-
-
-
-
-
-
-
-
-
-
-

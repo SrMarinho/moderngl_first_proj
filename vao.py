@@ -19,7 +19,7 @@ class VAO:
             vbo = self.vbo.vbos['sphere'])
 
     def get_vao(self, program, vbo):
-        vao = self.ctx.vertex_array(program, [(vbo.vbo, vbo.format, 'in_normal_position')], skip_errors=True)
+        vao = self.ctx.vertex_array(program, [(vbo.vbo, vbo.format, *vbo.attribs)], skip_errors=True)
         return vao
 
     def destroy(self):

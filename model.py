@@ -61,11 +61,13 @@ class Sphere(ExtendedBaseModel):
         self.pos = pos
         self.rot = rot
         self.scale = scale
+        self.rot[1] = 90
         self.program['obj.position'].value = self.pos
         self.program['obj.rotation'].value = self.rot
         self.program['obj.scale'].value = self.scale
         
     def update(self):
+        # self.rot[1] += 0.2
         self.program['obj.position'].value = self.pos
         self.program['obj.rotation'].value = self.rot
         self.program['obj.scale'].value = self.scale
