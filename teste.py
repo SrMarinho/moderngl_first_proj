@@ -165,6 +165,95 @@ class Cube:
         if keys[pg.K_s]:
             self.z += 0.2
 
+
+class Sphere:
+    def __init__(self) -> None:
+        self.scale = 25
+        self.angleX = 0
+        self.angleY = 0
+        self.angleZ = 0
+
+        self.x = 0
+        self.y = 0
+        self.z = 0
+        
+
+        radius = 1
+        
+        self.vertices = []
+        normals = []
+        texCoords = []
+
+        sectorCount = 10
+        stackCount = 5
+
+        x, y, z, xy = 0.0, 0.0, 0.0, 0.0  # vertex position
+        nx, ny, nz, lengthInv = 0.0, 0.0, 0.0, 1.0 / radius  # vertex normal
+        s, t = 0.0, 0.0  # vertex texCoord
+
+        sectorStep = 2 * np.pi / sectorCount
+        stackStep = np.pi / stackCount
+        sectorAngle, stackAngle = 0.0, 0.0
+
+        for i in range(stackCount + 1):
+            stackAngle = np.pi / 2 - i * stackStep  # starting from pi/2 to -pi/2
+            xy = radius * np.cos(stackAngle)  # r * cos(u)
+            z = radius * np.sin(stackAngle)  # r * sin(u)
+
+            # add (sectorCount+1) self.vertices per stack
+            # first and last self.vertices have the same position and normal, but different tex coords
+            for j in range(sectorCount + 1):
+                sectorAngle = j * sectorStep  # starting from 0 to 2pi
+
+                # vertex position (x, y, z)
+                x = xy * np.cos(sectorAngle)  # r * cos(u) * cos(v)
+                y = xy * np.sin(sectorAngle)  # r * cos(u) * sin(v)
+                self.vertices.append([round(x, 3), round(y, 3), round(z, 3), 1])
+
+                # normalized vertex normal (nx, ny, nz)
+                nx = x * lengthInv
+                ny = y * lengthInv
+                nz = z * lengthInv
+                normals.append([round(nx, 3), round(ny, 3), round(nz, 3)] * 6)
+
+                # vertex tex coord (s, t) range between [0, 1]
+                s = float(j) / sectorCount
+                t = float(i) / stackCount
+                texCoords.append([s, t])
+
+        # Convert lists to NumPy arrays
+        self.vertices = np.array(self.vertices, dtype=np.float32)
+        normals = np.array(normals, dtype=np.float32).reshape(len(normals) * 6, 3)
+        texCoords = np.array(texCoords, dtype=np.float32)
+
+        self.triangles = []
+        k1, k2 = 0, 0
+
+        for i in range(stackCount):
+            k1 = i * (sectorCount + 1)  # beginning of current stack
+            k2 = k1 + sectorCount + 1  # beginning of next stack
+
+            for j in range(sectorCount):
+                self.triangles.append([k1, k2, k1 + 1])
+
+                self.triangles.append([k2, k1 + 1, k2 + 1])
+
+                k1 += 1
+                k2 += 1
+
+        # Convert lists to NumPy arrays
+        self.triangles = np.array(self.triangles, dtype=np.int32)
+        print(len(self.triangles))
+        
+        self.center_of_mass = [-sum(p[0] for p in self.vertices) / len(self.vertices),
+                  -sum(p[1] for p in self.vertices) / len(self.vertices),
+                  -sum(p[2] for p in self.vertices) / len(self.vertices),
+                  1.0]
+        
+    
+    def update(self):
+        pass
+
 class Draw:
     def __init__(self) -> None:
         pass
@@ -264,9 +353,15 @@ far = 5.0
 engine = Engine()
 engine.perspective(fov, width, height, near, far)
 
-cube = Cube()
-cube.z = -2
+sphere = Sphere()
+sphere.z = -4
+sphere.x -= 1
 
+cube = Cube()
+cube.z = -4
+cube.x += 1
+
+engine.add_obj(sphere)
 engine.add_obj(cube)
 
 while True:
@@ -279,8 +374,11 @@ while True:
 
     engine.update()
 
-    cube.angleX += 1
-    cube.angleY += 1
+    sphere.angleX += 1
+    sphere.angleY += 1
+    
+    cube.angleX -= 1
+    cube.angleY -= 1
 
     engine.render(screen)
     

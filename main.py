@@ -66,5 +66,5 @@ class GraphicsEngine:
     
 
 if __name__ == '__main__':
-    app = GraphicsEngine(200, 200)
+    app = GraphicsEngine(600, 600)
     app.run()

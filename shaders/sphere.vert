@@ -111,12 +111,12 @@ void main()
     vec4 vertex = vec4(in_position, 1.0);
 
     mat4 model_transforms = (
-        translate(obj.position.x, obj.position.y, obj.position.z - 0.5) *
+        translate(obj.position.x, obj.position.y, obj.position.z) *
         scale(obj.scale.x, obj.scale.y, obj.scale.z) *
         rotateZ(radians(obj.rotation.z)) *
         rotateY(radians(obj.rotation.y)) *
         rotateX(radians(obj.rotation.x)) *
-        translate(-0.5, -0.5, -0.5) *
+        translate(-0.0, -0.0, -0.0) *
         1
     );
 

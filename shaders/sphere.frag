@@ -20,12 +20,13 @@ void main() {
     vec3 fragPos = vec3(gl_FragCoord);
     vec3 fragColor = vec3(0.0);
 
+
     light.color = vec3(0, 1, 1);
-    light.direction = -vec3(-1, 0, 0);
+    light.direction = -vec3(-1, -1, -1);
 
     float brightness = dot(norm, normalize(light.direction));
 
-    color = (fragColor + brightness) * light.color;
+    color = (fragColor + brightness);
 
     gl_FragColor = vec4(color, 1.0);
 }

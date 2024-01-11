@@ -13,8 +13,12 @@ class Scene:
         app = self.app
         add = self.add_object
 
-        # add(Cube(app, pos=(0, 0, 0)))
-        add(Sphere(app, pos=(0, 0, 0), scale=(0.2, 0.2, 0.2)))
+        add(Cube(app, pos=(0, 0, 0)))
+        # sphere = Sphere(app, pos=[0, 0, -2.5], scale=[1.5, 1.5,1.5])
+        # sphere.velocityX = 0.04
+        # sphere.velocityY = 0.04
+        # sphere.velocityZ = 0.04
+        # add(sphere)
         
     def update(self):
         for obj in self.objects:

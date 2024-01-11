@@ -77,15 +77,15 @@ class SphereVBO(BaseVBO):
         self.attribs = ['in_normal', 'in_position']        
 
     def get_vertex_data(self):
-        
+        # np.set_printoptions(threshold=np.inf)
         radius = 1
         vertices = []
         
         normals = []
         texCoords = []
 
-        sectorCount = 10
-        stackCount = 5
+        sectorCount = 3
+        stackCount = 3
 
         x, y, z, xy = 0.0, 0.0, 0.0, 0.0  # vertex position
         nx, ny, nz, lengthInv = 0.0, 0.0, 0.0, 1.0 / radius  # vertex normal
@@ -114,51 +114,46 @@ class SphereVBO(BaseVBO):
                 nx = x * lengthInv
                 ny = y * lengthInv
                 nz = z * lengthInv
-                normals.append([nx, ny, nz] * 6)
+                normals.append([round(nx, 3), round(ny, 3), round(nz, 3)])
 
                 # vertex tex coord (s, t) range between [0, 1]
                 s = float(j) / sectorCount
                 t = float(i) / stackCount
                 texCoords.append([s, t])
-
         # Convert lists to NumPy arrays
         vertices = np.array(vertices, dtype=np.float32)
         normals = np.array(normals, dtype=np.float32)
         texCoords = np.array(texCoords, dtype=np.float32)
 
         indices = []
-        lineIndices = []
         k1, k2 = 0, 0
 
-        for i in range(1, 2, 1):
+        for i in range(stackCount):
             k1 = i * (sectorCount + 1)  # beginning of current stack
             k2 = k1 + sectorCount + 1  # beginning of next stack
 
             for j in range(sectorCount):
                 # 2 triangles per sector excluding first and last stacks
                 # k1 => k2 => k1+1
-                indices.append([k2, k1, k2 + 1])
+                indices.append([k1, k2, k1 + 1])
+                indices.append([k2, k2 + 1, k1 + 1])
 
-                indices.append([k1, k2 + 1, k2])
-
-                # store indices for lines
-                # vertical lines for all stacks, k1 => k2
-                lineIndices.append([k1, k2])
-                if i != 0:  # horizontal lines except 1st stack, k1 => k+1
-                    lineIndices.append([k1, k1 + 1])
 
                 k1 += 1
                 k2 += 1
 
         # Convert lists to NumPy arrays
         indices = np.array(indices, dtype=np.int32)
-        lineIndices = np.array(lineIndices, dtype=np.int32)
         
-        vertex_data = self.get_data(vertices=vertices, indices=indices)
+        center_of_mass = [-sum(p[0] for p in vertices) / len(vertices),
+                  -sum(p[1] for p in vertices) / len(vertices),
+                  -sum(p[2] for p in vertices) / len(vertices),
+                  1.0]
         
-        # Convert lists to NumPy arrays
-        # indices = np.array(indices, dtype=np.int32)       
-        # vertex_data = np.hstack([normals, vertices])
-        # vertex_data = self.get_data(vertices, indices)
-        # print(vertex_data)
+        vertex_per_triangle = self.get_data(vertices, indices)
+ 
+        normal_per_triangle = self.get_data(normals, indices)
+
+        vertex_data = np.hstack([normal_per_triangle, vertex_per_triangle])
+        
         return vertex_data
