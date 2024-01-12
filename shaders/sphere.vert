@@ -110,7 +110,7 @@ void main()
 
     vec4 vertex = vec4(in_position, 1.0);
 
-    mat4 model_transforms = (
+    mat4 modelView = (
         translate(obj.position.x, obj.position.y, obj.position.z) *
         scale(obj.scale.x, obj.scale.y, obj.scale.z) *
         rotateZ(radians(obj.rotation.z)) *
@@ -122,15 +122,12 @@ void main()
 
     vertex = (
         m_proj *
-        model_transforms *
+        modelView *
         vertex
     );
 
-    model_transforms = transpose(inverse(model_transforms));
-    normal = vec3(
-        model_transforms *
-        vec4(in_normal, 1.0)
-    );
+    normal = mat3(transpose(inverse(modelView)))
+    * normalize(in_normal);
 
     vertPos = in_position;
     

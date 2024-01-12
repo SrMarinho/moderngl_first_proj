@@ -9,6 +9,14 @@ struct Light {
     vec3  position;
     vec3  direction;
     vec3 color;
+
+    float Ka;
+    float Kd;
+    float Ks;
+
+    vec3 ambientColor;
+    vec3 diffuseColor;
+    vec3 specularColor;
 };
 
 void main() {
@@ -17,32 +25,36 @@ void main() {
     vec2 u_resolution = u_resolution;
     vec3 norm = normalize(normal);
     vec3 vert = vertPos;
-    vec3 fragPos = vec3(gl_FragCoord);
+    vec3 FragPos = -vec3(gl_FragCoord);
     vec3 fragColor = vec3(1);
 
-    light.position = vec3(1, 0, 0);
-    light.direction = vec3(0, 0, -1);
+    light.position = vec3(5, 0, 5);
+    light.direction = vec3(1, 1, 0);
     light.color = vec3(0, 1, 1);
+    light.Ka = 0.1;
+    light.Kd = 0.5;
+    light.Ks = 0.5;
+    light.ambientColor = vec3(0, 0, 1);
+    light.diffuseColor = vec3(1, 1, 0);
+    light.specularColor = vec3(1, 1, 1);
 
-    vec3 lightDir = normalize(light.position - fragPos);
+    vec3 N = norm;
+    vec3 L = normalize(light.position - vertPos);
 
-    float diff = max(dot(norm, lightDir), 0.0);
-    vec3 diffuse = diff * light.color;
+    // Lambert's cosine law
+    float lambertian = max(dot(N, L), 0.0);
+    float specular = 0.0;
+    if(lambertian > 0.0) {
+        vec3 R = reflect(-L, N);      // Reflected light vector
+        vec3 V = normalize(-vertPos); // Vector to viewer
+        // Compute the specular term
+        float specAngle = max(dot(R, V), 0.0);
+        specular = pow(specAngle, 64);
+    }
 
-    // float brightness = dot(norm, normalize(light.direction));
-
-    float ambientStrength = 0.1;
-    vec3 ambient = ambientStrength * light.color;
-
-    float specularStrength = 0.5;
-
-    vec3 viewDir = normalize(vec3(0, 0, 0) - fragPos);
-    vec3 reflectDir = reflect(-lightDir, norm);
-
-    float spec = pow(max(dot(viewDir, reflectDir), 0.0), 64);
-    vec3 specular = specularStrength * spec * light.color; 
-
-    color = fragColor * (ambient + diffuse);
+    color = vec3(light.Ka * light.ambientColor +
+            light.Kd * lambertian * light.diffuseColor +
+            light.Ks * specular * light.specularColor);
 
     gl_FragColor = vec4(color, 1.0);
 }
