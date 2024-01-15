@@ -1,6 +1,5 @@
 import moderngl as mgl
 import numpy as np
-import glm
 import pygame as pg
 
 from operations import *
@@ -11,7 +10,7 @@ class BaseModel:
         self.app = app
         self.pos = pos
         self.vao_name = vao_name
-        self.rot = glm.vec3([glm.radians(a) for a in rot])
+        self.rot = [np.radians(a) for a in rot]
         self.scale = scale
         self.vao = app.mesh.vao.vaos[vao_name]
         self.program = self.vao.program
@@ -58,6 +57,56 @@ class Cube(ExtendedBaseModel):
         
 class Sphere(ExtendedBaseModel):
     def __init__(self, app, vao_name='sphere', pos=[1, 0, 0], rot=[90, 0, 0], scale=[1, 1, 1]):
+        super().__init__(app, vao_name, pos, rot, scale)
+        self.pos = pos
+        self.rot = rot
+        self.scale = scale
+        
+        self.velocityX = 0.01
+        self.velocityY = 0.01
+        self.velocityZ = 0.01
+        
+        self.rotation_velocity = 1
+        
+        self.program['obj.position'].value = self.pos
+        self.program['obj.rotation'].value = self.rot
+        self.program['obj.scale'].value = self.scale
+        
+    def update(self):
+        keys=pg.key.get_pressed()
+        if keys[pg.K_UP]:
+            self.rot[0] += 1
+        if keys[pg.K_DOWN]:
+            self.rot[0] -= 1
+        if keys[pg.K_LEFT]:
+            self.rot[1] += 1
+        if keys[pg.K_RIGHT]:
+            self.rot[1] -= 1
+            
+        
+        if keys[pg.K_a]:
+            self.pos[0] -= self.velocityX
+        if keys[pg.K_d]:
+            self.pos[0] += self.velocityX
+            
+        if keys[pg.K_q]:
+            self.pos[1] -= self.velocityY
+        if keys[pg.K_e]:
+            self.pos[1] += self.velocityY
+            
+        if keys[pg.K_w]:
+            self.pos[2] -= self.velocityZ
+        if keys[pg.K_s]:
+            self.pos[2] += self.velocityZ
+
+        # self.rot[1] += 0.5
+        self.program['obj.position'].value = self.pos
+        self.program['obj.rotation'].value = self.rot
+        self.program['obj.scale'].value = self.scale
+        self.program['iTime'].value = self.app.time
+        
+class Teapot(ExtendedBaseModel):
+    def __init__(self, app, vao_name='teapot', pos=[0, 0, 0], rot=[0, 0, 0], scale=[1, 1, 1]):
         super().__init__(app, vao_name, pos, rot, scale)
         self.pos = pos
         self.rot = rot

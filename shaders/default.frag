@@ -43,16 +43,17 @@ void main() {
     vec3 color;
     vec2 u_resolution = u_resolution;
     vec3 vert = vertPos;
-    vec3 fragColor = vec3(0);
+    vec3 fragColor = vec3(0.15, 0.09, 0.64);
 
     light.position = vec3(10 * cos(iTime), 10, 10 * sin(iTime));
     light.ambientColor = vec3(0.1, 0.1, 0.1);
     light.diffuseColor = vec3(0, 0.5, 1);
     light.specularColor = vec3(0.4, 0.4, 0.4);
-    light.specularExponent = 4;
+    light.specularExponent = 32;
 
     vec3 viewPos = vec3(0, 0, 0);
-    color =  fragColor + illumination(light, viewPos);
+    // color =  fragColor + illumination(light, viewPos);
+    color = fragColor;
 
     gl_FragColor = vec4(color, 1.0);
 }

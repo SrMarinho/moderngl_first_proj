@@ -18,28 +18,6 @@ uniform float iTime;
 
 uniform mat4 m_proj;
 
-vec4 multM4V4(mat4 m, vec4 v) 
-{ 
-    vec4 o;
-    
-    for(int row = 0; row < 4; row++){
-        for(int col = 0; col < 4; col++){
-            o[row] += m[row][col] * v[col];
-        }    
-    }
-
-    return o; 
-}
-
-vec3 mult3x33(vec3 v, mat3 m)
-{
-    vec3 u;
-    u.x = m[0][0] * v.x + m[0][1] * v.y + m[0][2] * v.z;
-    u.y = m[1][0] * v.x + m[1][1] * v.y + m[1][2] * v.z;
-    u.z = m[2][0] * v.x + m[2][1] * v.y + m[2][2] * v.z;
-    return u;
-}
-
 mat4 rotateX(float angle)
 {
     mat4 rotxMatrix = mat4(0.0);
@@ -116,7 +94,7 @@ void main()
         rotateZ(radians(obj.rotation.z)) *
         rotateY(radians(obj.rotation.y)) *
         rotateX(radians(obj.rotation.x)) *
-        translate(-0.5, -0.5, -0.5) *
+        translate(-0.0, -0.0, -0.0) *
         1
     );
 

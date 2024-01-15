@@ -1,5 +1,6 @@
 import numpy as np
 import moderngl as mgl
+import pywavefront
 
 
 class VBO:
@@ -7,6 +8,7 @@ class VBO:
         self.vbos = {}
         self.vbos['cube'] = CubeVBO(ctx)
         self.vbos['sphere'] = SphereVBO(ctx)
+        self.vbos['teapot'] = TeapotVBO(ctx)
 
     def destroy(self):
         [vbo.destroy() for vbo in self.vbos.values()]
@@ -38,8 +40,8 @@ class BaseVBO:
 class CubeVBO(BaseVBO):
     def __init__(self, ctx):
         super().__init__(ctx)
-        self.format = '6f'
-        self.attribs = ['in_normal_position']
+        self.format = '3f 3f'
+        self.attribs = ['in_normal', 'in_position']
 
     @staticmethod
     def get_data(vertices, indices):
@@ -68,6 +70,11 @@ class CubeVBO(BaseVBO):
 
         vertex_data = np.hstack([normals, vertex_data])
         
+        center_of_mass = [-sum(p[0] for p in vertices) / len(vertices),
+            -sum(p[1] for p in vertices) / len(vertices),
+            -sum(p[2] for p in vertices) / len(vertices),
+            1.0]
+        
         return vertex_data
     
 class SphereVBO(BaseVBO):
@@ -84,8 +91,8 @@ class SphereVBO(BaseVBO):
         normals = []
         texCoords = []
 
-        sectorCount = 50
-        stackCount = 25
+        sectorCount = 30
+        stackCount = 30
 
         x, y, z, xy = 0.0, 0.0, 0.0, 0.0  # vertex position
         nx, ny, nz, lengthInv = 0.0, 0.0, 0.0, 1.0 / radius  # vertex normal
@@ -136,6 +143,7 @@ class SphereVBO(BaseVBO):
                 # 2 triangles per sector excluding first and last stacks
                 # k1 => k2 => k1+1
                 indices.append([k1, k2, k1 + 1])
+                
                 indices.append([k2, k2 + 1, k1 + 1])
 
 
@@ -153,7 +161,36 @@ class SphereVBO(BaseVBO):
         vertex_per_triangle = self.get_data(vertices, indices)
  
         normal_per_triangle = self.get_data(normals, indices)
-
+        
         vertex_data = np.hstack([normal_per_triangle, vertex_per_triangle])
         
+        return vertex_data
+    
+class TeapotVBO(BaseVBO):
+    def __init__(self, ctx):
+        super().__init__(ctx)
+        self.format = '3f 3f'
+        self.attribs = ['in_normal', 'in_position']
+
+    def get_vertex_data(self):
+        objs = pywavefront.Wavefront('objects/teapot.obj', cache=True, parse=True, )
+        obj = objs.materials.popitem()[1]
+        vertex_data = np.array(obj.vertices, dtype='f4').reshape((int(len(obj.vertices) / 3), 3))
+        
+        normals = []
+        for i in range(0, len(vertex_data), 3):
+            normals.append(np.cross(vertex_data[i], vertex_data[i + 1]))
+            normals.append(np.cross(vertex_data[i + 1], vertex_data[i + 2]))
+            normals.append(np.cross(vertex_data[i + 2], vertex_data[i]))
+        
+        normals = np.array(normals, dtype='f4')
+            
+        normals = normals.reshape(len(normals) * 3)
+        vertex_data = vertex_data.reshape(len(vertex_data) * 3)
+        
+        vertex_data = np.hstack([normals, vertex_data])
+        # center_of_mass = [-sum(p[0] for p in obj.vertices) / len(obj.vertices),
+        #     -sum(p[1] for p in obj.vertices) / len(obj.vertices),
+        #     -sum(p[2] for p in obj.vertices) / len(obj.vertices),
+        #     1.0]
         return vertex_data

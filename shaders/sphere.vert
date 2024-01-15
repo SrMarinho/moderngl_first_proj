@@ -126,10 +126,9 @@ void main()
         vertex
     );
 
-    normal = mat3(transpose(inverse(modelView)))
-    * normalize(in_normal);
+    normal = mat3(transpose(inverse(modelView))) * in_normal;
 
-    vertPos = in_position;
+    vertPos = vec3(modelView * vec4(in_position, 1.0));
     
     gl_Position = vertex;
 }

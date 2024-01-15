@@ -2,59 +2,59 @@
 
 in vec3 normal;
 in vec3 vertPos;
+flat in vec3 flat_color;
 
 uniform vec2 u_resolution;
+uniform float iTime;
 
 struct Light {
     vec3  position;
     vec3  direction;
-    vec3 color;
-
-    float Ka;
-    float Kd;
-    float Ks;
 
     vec3 ambientColor;
     vec3 diffuseColor;
     vec3 specularColor;
+
+    float specularExponent;
 };
+
+vec3 illumination(Light L, vec3 viewPos) {
+    vec3 ambient = L.ambientColor;
+
+    vec3 norm = normalize(normal);
+
+    vec3 lightDir = normalize(L.position - vertPos);
+
+    float diff = max(dot(norm, lightDir), 0.0);
+    vec3 diffuse = diff * L.diffuseColor;
+
+    float specularStrength = 0.5;
+
+    vec3 viewDir = normalize(viewPos - vertPos);
+    vec3 reflectDir = reflect(-lightDir, norm);
+
+    float spec = pow(max(dot(viewDir, reflectDir), 0.0), L.specularExponent);
+    vec3 specular = specularStrength * spec * L.specularColor;
+
+    return ambient + diffuse + specular;
+}
 
 void main() {
     Light light;
     vec3 color;
     vec2 u_resolution = u_resolution;
-    vec3 norm = normalize(normal);
     vec3 vert = vertPos;
-    vec3 FragPos = -vec3(gl_FragCoord);
-    vec3 fragColor = vec3(1);
+    vec3 fragColor = vec3(0);
 
-    light.position = vec3(5, 0, 5);
-    light.direction = vec3(1, 1, 0);
-    light.color = vec3(0, 1, 1);
-    light.Ka = 0.1;
-    light.Kd = 0.5;
-    light.Ks = 0.5;
-    light.ambientColor = vec3(0, 0, 1);
-    light.diffuseColor = vec3(1, 1, 0);
-    light.specularColor = vec3(1, 1, 1);
+    light.position = vec3(0, 0, 5);
+    light.ambientColor = vec3(0.1, 0.1, 0.1);
+    light.diffuseColor = vec3(0, 0.5, 1);
+    light.specularColor = vec3(0.4, 0.4, 0.4);
+    light.specularExponent = 32;
 
-    vec3 N = norm;
-    vec3 L = normalize(light.position - vertPos);
-
-    // Lambert's cosine law
-    float lambertian = max(dot(N, L), 0.0);
-    float specular = 0.0;
-    if(lambertian > 0.0) {
-        vec3 R = reflect(-L, N);      // Reflected light vector
-        vec3 V = normalize(-vertPos); // Vector to viewer
-        // Compute the specular term
-        float specAngle = max(dot(R, V), 0.0);
-        specular = pow(specAngle, 64);
-    }
-
-    color = vec3(light.Ka * light.ambientColor +
-            light.Kd * lambertian * light.diffuseColor +
-            light.Ks * specular * light.specularColor);
+    vec3 viewPos = vec3(0, 0, 0);
+    
+    color =  fragColor + illumination(light, viewPos);
 
     gl_FragColor = vec4(color, 1.0);
 }
