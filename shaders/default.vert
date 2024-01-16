@@ -10,6 +10,7 @@ struct Obj {
     vec3 position;
     vec3 rotation;
     vec3 scale;
+    vec3 axes;
 };
 
 uniform Obj obj;

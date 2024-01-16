@@ -19,7 +19,7 @@ class VAO:
             vbo = self.vbo.vbos['sphere'])
 
         self.vaos['teapot'] = self.get_vao(
-            program=self.program.programs['default'],
+            program=self.program.programs['teapot'],
             vbo = self.vbo.vbos['teapot'])
 
     def get_vao(self, program, vbo):

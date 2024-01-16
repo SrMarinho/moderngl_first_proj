@@ -2,9 +2,9 @@ class ShaderProgram:
     def __init__(self, ctx):
         self.ctx = ctx
         self.programs = {}
-        self.programs['cube'] = self.get_program('cube')
-        self.programs['sphere'] = self.get_program('sphere')
-        self.programs['default'] = self.get_program('default')
+        self.programs['cube'] = self.get_program('default')
+        self.programs['sphere'] = self.get_program('default')
+        self.programs['teapot'] = self.get_program('default')
 
     def get_program(self, shader_program_name):
         with open(f'shaders/{shader_program_name}.vert') as file:

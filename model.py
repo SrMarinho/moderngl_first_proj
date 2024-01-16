@@ -46,6 +46,7 @@ class Cube(ExtendedBaseModel):
         self.program['obj.position'].value = self.pos
         self.program['obj.rotation'].value = self.rot
         self.program['obj.scale'].value = self.scale
+        self.app = app
         
     def update(self):
         self.rot[0] += 0.6
@@ -71,6 +72,7 @@ class Sphere(ExtendedBaseModel):
         self.program['obj.position'].value = self.pos
         self.program['obj.rotation'].value = self.rot
         self.program['obj.scale'].value = self.scale
+        
         
     def update(self):
         keys=pg.key.get_pressed()
@@ -121,6 +123,7 @@ class Teapot(ExtendedBaseModel):
         self.program['obj.position'].value = self.pos
         self.program['obj.rotation'].value = self.rot
         self.program['obj.scale'].value = self.scale
+        print(self.app.mesh.vao.vbo.vbos['teapot'])
         
     def update(self):
         keys=pg.key.get_pressed()

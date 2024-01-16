@@ -19,7 +19,7 @@ class Scene:
         # sphere.velocityY = 0.04
         # sphere.velocityZ = 0.04
         # add(sphere)
-        add(Teapot(app, pos=[0, 0, -6]))
+        add(Teapot(app, pos=[0, 0, -4]))
         
     def update(self):
         for obj in self.objects:

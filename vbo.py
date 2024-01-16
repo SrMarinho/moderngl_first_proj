@@ -91,8 +91,8 @@ class SphereVBO(BaseVBO):
         normals = []
         texCoords = []
 
-        sectorCount = 30
-        stackCount = 30
+        sectorCount = 10
+        stackCount = 5
 
         x, y, z, xy = 0.0, 0.0, 0.0, 0.0  # vertex position
         nx, ny, nz, lengthInv = 0.0, 0.0, 0.0, 1.0 / radius  # vertex normal
@@ -162,6 +162,7 @@ class SphereVBO(BaseVBO):
  
         normal_per_triangle = self.get_data(normals, indices)
         
+        
         vertex_data = np.hstack([normal_per_triangle, vertex_per_triangle])
         
         return vertex_data
@@ -173,24 +174,8 @@ class TeapotVBO(BaseVBO):
         self.attribs = ['in_normal', 'in_position']
 
     def get_vertex_data(self):
-        objs = pywavefront.Wavefront('objects/teapot.obj', cache=True, parse=True, )
+        objs = pywavefront.Wavefront('objects/teapot.obj', cache=True, parse=True)
         obj = objs.materials.popitem()[1]
-        vertex_data = np.array(obj.vertices, dtype='f4').reshape((int(len(obj.vertices) / 3), 3))
-        
-        normals = []
-        for i in range(0, len(vertex_data), 3):
-            normals.append(np.cross(vertex_data[i], vertex_data[i + 1]))
-            normals.append(np.cross(vertex_data[i + 1], vertex_data[i + 2]))
-            normals.append(np.cross(vertex_data[i + 2], vertex_data[i]))
-        
-        normals = np.array(normals, dtype='f4')
-            
-        normals = normals.reshape(len(normals) * 3)
-        vertex_data = vertex_data.reshape(len(vertex_data) * 3)
-        
-        vertex_data = np.hstack([normals, vertex_data])
-        # center_of_mass = [-sum(p[0] for p in obj.vertices) / len(obj.vertices),
-        #     -sum(p[1] for p in obj.vertices) / len(obj.vertices),
-        #     -sum(p[2] for p in obj.vertices) / len(obj.vertices),
-        #     1.0]
+        vertex_data = np.array(obj.vertices, dtype='f4')
+
         return vertex_data
