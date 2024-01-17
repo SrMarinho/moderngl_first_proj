@@ -5,6 +5,10 @@ import numpy as np
 from mesh import Mesh
 from scene import Scene
 from scene_renderer import SceneRenderer
+import dearpygui.dearpygui as dpg
+import socket
+import threading
+
 
 class GraphicsEngine:
     def __init__(self, width=1280, height=720) -> None:
@@ -34,6 +38,8 @@ class GraphicsEngine:
         
         self.scene_renderer = SceneRenderer(self)
         
+        # self.socket_server(self)
+        
     
     def events(self):
         for event in pg.event.get():
@@ -56,15 +62,45 @@ class GraphicsEngine:
         self.time = pg.time.get_ticks() * 0.001
     
     def run(self):
+        HOST = "127.0.0.1"  # Standard loopback interface address (localhost)
+        PORT = 65432  # Port to listen on (non-privileged ports are > 1023)
+
+        server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        server.bind((HOST, PORT))
+        server.listen()
+        print(f"Aguardando conexão na porta {PORT}...")
+        t1 = threading.Thread(target=server.accept)
+        t1.start()
+        # conn, addr = server.accept()
+        # print(f"Conectado por {addr}")
         while True:
             self.get_time()
             self.events()
             self.update()
             self.render()
             self.delta_time = self.clock.tick(self.FPS)
+            
+            # data = "Dados a serem enviados"
+            # conn.send(data.encode())
+            # received_data = conn.recv(1024).decode()
+            
             pg.display.set_caption("FPS: " + str(round(self.clock.get_fps(), 2)))
-    
+                    
 
+    # def socket_server(self, app):
+    #     HOST = "127.0.0.1"  # Standard loopback interface address (localhost)
+    #     PORT = 65432  # Port to listen on (non-privileged ports are > 1023)
+
+    #     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+    #         s.bind((HOST, PORT))
+    #         s.listen()
+    #         conn, addr = s.accept()
+    #         with conn:
+    #             print(f"Connected by {addr}")
+    #             while True:
+    #                 data = conn.recv(1024)
+    #                 if not data:
+    #                     break
+    #                 conn.sendall(data)
 if __name__ == '__main__':
     app = GraphicsEngine(200, 200)
-    app.run()

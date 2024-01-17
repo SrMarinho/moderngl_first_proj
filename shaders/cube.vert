@@ -10,6 +10,7 @@ struct Obj {
     vec3 position;
     vec3 rotation;
     vec3 scale;
+    vec3 axis;
 };
 
 uniform Obj obj;
@@ -116,7 +117,7 @@ void main()
         rotateZ(radians(obj.rotation.z)) *
         rotateY(radians(obj.rotation.y)) *
         rotateX(radians(obj.rotation.x)) *
-        translate(-0.5, -0.5, -0.5) *
+        translate(obj.axis.x, obj.axis.y, obj.axis.z) *
         1
     );
 

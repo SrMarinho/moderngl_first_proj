@@ -14,6 +14,10 @@ class BaseModel:
         self.scale = scale
         self.vao = app.mesh.vao.vaos[vao_name]
         self.program = self.vao.program
+        self.program['obj.axis'].value = [0, 0, 0]
+        self.velocityX = 0.01
+        self.velocityY = 0.01
+        self.velocityZ = 0.01
 
     def update(self): ...
 
@@ -40,17 +44,44 @@ class ExtendedBaseModel(BaseModel):
 class Cube(ExtendedBaseModel):
     def __init__(self, app, vao_name='cube', pos=[0, 0, 0], rot=[0, 0, 0], scale=[0.5, 0.5, 0.5]):
         super().__init__(app, vao_name, pos, rot, scale)
-        self.pos = pos
-        self.rot = rot
-        self.scale = scale
+        self.pos = list(pos)
+        self.rot = list(rot)
+        self.scale = list(scale)
+        
         self.program['obj.position'].value = self.pos
         self.program['obj.rotation'].value = self.rot
         self.program['obj.scale'].value = self.scale
-        self.app = app
+        self.program['obj.axis'].value = self.app.mesh.vao.vbo.vbos[self.vao_name].axis
+        
         
     def update(self):
-        self.rot[0] += 0.6
-        self.rot[1] += 0.4
+        keys=pg.key.get_pressed()
+        if keys[pg.K_UP]:
+            self.rot[0] += 1
+        if keys[pg.K_DOWN]:
+            self.rot[0] -= 1
+        if keys[pg.K_LEFT]:
+            self.rot[1] += 1
+        if keys[pg.K_RIGHT]:
+            self.rot[1] -= 1
+            
+        
+        if keys[pg.K_a]:
+            self.pos[0] -= self.velocityX
+        if keys[pg.K_d]:
+            self.pos[0] += self.velocityX
+            
+        if keys[pg.K_q]:
+            self.pos[1] -= self.velocityY
+        if keys[pg.K_e]:
+            self.pos[1] += self.velocityY
+            
+        if keys[pg.K_w]:
+            self.pos[2] -= self.velocityZ
+        if keys[pg.K_s]:
+            self.pos[2] += self.velocityZ
+
+        # self.rot[1] += 0.5
         self.program['obj.position'].value = self.pos
         self.program['obj.rotation'].value = self.rot
         self.program['obj.scale'].value = self.scale
@@ -72,7 +103,7 @@ class Sphere(ExtendedBaseModel):
         self.program['obj.position'].value = self.pos
         self.program['obj.rotation'].value = self.rot
         self.program['obj.scale'].value = self.scale
-        
+        self.program['obj.axis'].value = self.app.mesh.vao.vbo.vbos[self.vao_name].axis
         
     def update(self):
         keys=pg.key.get_pressed()
@@ -123,7 +154,8 @@ class Teapot(ExtendedBaseModel):
         self.program['obj.position'].value = self.pos
         self.program['obj.rotation'].value = self.rot
         self.program['obj.scale'].value = self.scale
-        print(self.app.mesh.vao.vbo.vbos['teapot'])
+        self.program['obj.axis'].value = self.app.mesh.vao.vbo.vbos[self.vao_name].axis
+        
         
     def update(self):
         keys=pg.key.get_pressed()
@@ -158,4 +190,55 @@ class Teapot(ExtendedBaseModel):
         self.program['obj.scale'].value = self.scale
         self.program['iTime'].value = self.app.time
             
+            
+class Floor(ExtendedBaseModel):
+    def __init__(self, app, vao_name='teapot', pos=[0, 0, 0], rot=[0, 0, 0], scale=[1, 1, 1]):
+        super().__init__(app, vao_name, pos, rot, scale)
+        self.pos = pos
+        self.rot = rot
+        self.scale = scale
         
+        self.velocityX = 0.01
+        self.velocityY = 0.01
+        self.velocityZ = 0.01
+        
+        self.rotation_velocity = 1
+        
+        self.program['obj.position'].value = self.pos
+        self.program['obj.rotation'].value = self.rot
+        self.program['obj.scale'].value = self.scale
+        self.program['obj.axis'].value = self.app.mesh.vao.vbo.vbos[self.vao_name].axis
+        
+        
+    def update(self):
+        keys=pg.key.get_pressed()
+        if keys[pg.K_UP]:
+            self.rot[0] += 1
+        if keys[pg.K_DOWN]:
+            self.rot[0] -= 1
+        if keys[pg.K_LEFT]:
+            self.rot[1] += 1
+        if keys[pg.K_RIGHT]:
+            self.rot[1] -= 1
+            
+        
+        if keys[pg.K_a]:
+            self.pos[0] -= self.velocityX
+        if keys[pg.K_d]:
+            self.pos[0] += self.velocityX
+            
+        if keys[pg.K_q]:
+            self.pos[1] -= self.velocityY
+        if keys[pg.K_e]:
+            self.pos[1] += self.velocityY
+            
+        if keys[pg.K_w]:
+            self.pos[2] -= self.velocityZ
+        if keys[pg.K_s]:
+            self.pos[2] += self.velocityZ
+
+        # self.rot[1] += 0.5
+        self.program['obj.position'].value = self.pos
+        self.program['obj.rotation'].value = self.rot
+        self.program['obj.scale'].value = self.scale
+        self.program['iTime'].value = self.app.time

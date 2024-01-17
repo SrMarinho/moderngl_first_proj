@@ -20,6 +20,7 @@ class BaseVBO:
         self.vbo = self.get_vbo()
         self.format: str = None
         self.attribs: list = None
+        self.axis: list = None
         
     @staticmethod
     def get_data(vertices, indices):
@@ -35,6 +36,23 @@ class BaseVBO:
 
     def destroy(self):
         self.vbo.release()
+    
+    @staticmethod
+    def get_axis(vertex_data):
+        if isinstance(vertex_data[0], float):
+            vertices = []
+            for i in range(3, len(vertex_data), 3):
+                aux = []
+                aux.append(vertex_data[i])
+                aux.append(vertex_data[i + 1])
+                aux.append(vertex_data[i + 2])
+                vertices.append(aux)
+        elif isinstance(vertex_data[0], list) or isinstance(vertex_data[0], tuple) or isinstance(vertex_data[0], np.ndarray):
+            return [-sum(p[3] for p in vertex_data) / len(vertex_data),
+                    -sum(p[4] for p in vertex_data) / len(vertex_data),
+                    -sum(p[5] for p in vertex_data) / len(vertex_data)]
+        else:
+            return [0, 0, 0]
 
 
 class CubeVBO(BaseVBO):
@@ -42,6 +60,7 @@ class CubeVBO(BaseVBO):
         super().__init__(ctx)
         self.format = '3f 3f'
         self.attribs = ['in_normal', 'in_position']
+        self.axis = self.get_axis(self.get_vertex_data())
 
     @staticmethod
     def get_data(vertices, indices):
@@ -69,19 +88,15 @@ class CubeVBO(BaseVBO):
         normals = np.array(normals, dtype='f4').reshape(36, 3)
 
         vertex_data = np.hstack([normals, vertex_data])
-        
-        center_of_mass = [-sum(p[0] for p in vertices) / len(vertices),
-            -sum(p[1] for p in vertices) / len(vertices),
-            -sum(p[2] for p in vertices) / len(vertices),
-            1.0]
-        
+
         return vertex_data
     
 class SphereVBO(BaseVBO):
     def __init__(self, ctx):
         super().__init__(ctx)
         self.format = '3f 3f'
-        self.attribs = ['in_normal', 'in_position']        
+        self.attribs = ['in_normal', 'in_position']
+        self.axis = self.get_axis(self.get_vertex_data())
 
     def get_vertex_data(self):
         # np.set_printoptions(threshold=np.inf)
@@ -107,8 +122,6 @@ class SphereVBO(BaseVBO):
             xy = radius * np.cos(stackAngle)  # r * cos(u)
             z = radius * np.sin(stackAngle)  # r * sin(u)
 
-            # add (sectorCount+1) self.vertices per stack
-            # first and last self.vertices have the same position and normal, but different tex coords
             for j in range(sectorCount + 1):
                 sectorAngle = j * sectorStep  # starting from 0 to 2pi
 
@@ -140,23 +153,13 @@ class SphereVBO(BaseVBO):
             k2 = k1 + sectorCount + 1  # beginning of next stack
 
             for j in range(sectorCount):
-                # 2 triangles per sector excluding first and last stacks
-                # k1 => k2 => k1+1
-                indices.append([k1, k2, k1 + 1])
-                
+                indices.append([k1, k2, k1 + 1])                
                 indices.append([k2, k2 + 1, k1 + 1])
-
 
                 k1 += 1
                 k2 += 1
 
-        # Convert lists to NumPy arrays
         indices = np.array(indices, dtype=np.int32)
-        
-        center_of_mass = [-sum(p[0] for p in vertices) / len(vertices),
-                  -sum(p[1] for p in vertices) / len(vertices),
-                  -sum(p[2] for p in vertices) / len(vertices),
-                  1.0]
         
         vertex_per_triangle = self.get_data(vertices, indices)
  
@@ -172,8 +175,11 @@ class TeapotVBO(BaseVBO):
         super().__init__(ctx)
         self.format = '3f 3f'
         self.attribs = ['in_normal', 'in_position']
+        self.axis = self.get_axis(self.get_vertex_data())
+        
 
-    def get_vertex_data(self):
+    @staticmethod
+    def get_vertex_data():
         objs = pywavefront.Wavefront('objects/teapot.obj', cache=True, parse=True)
         obj = objs.materials.popitem()[1]
         vertex_data = np.array(obj.vertices, dtype='f4')
