@@ -23,4 +23,12 @@ class Scene:
         
     def update(self):
         for obj in self.objects:
-            obj.update() 
+            obj.update()
+            
+    def toJson(self):
+        data = {}
+        scene = {}
+        for i in range(len(self.objects)):
+            scene[i] = self.objects[i].toJson()
+        data["scene"] = scene
+        return str(data)

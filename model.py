@@ -24,6 +24,14 @@ class BaseModel:
     def render(self):
         self.update()
         self.vao.render()
+        
+    def toJson(self):
+        return {
+            "vao_name": self.vao_name,
+            "pos": self.pos,
+            "rot": self.rot,
+            "scale": self.scale
+        }
 
 
 class ExtendedBaseModel(BaseModel):

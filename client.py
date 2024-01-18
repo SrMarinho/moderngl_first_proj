@@ -1,31 +1,36 @@
 import socket
+import threading
+import json
 
-# Configurações do cliente
-host = '127.0.0.1'  # Endereço IP do servidor
-port = 12345         # Porta do servidor
+class Client:
+    def __init__(self, host, port) -> None:
+        self.host = host
+        self.port = port
+        self.hostname = socket.gethostname()
+        # Criação do socket
+        self.client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
-# Criação do socket
-client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        # Conecta ao servidor
+        self.client_socket.connect((self.host, self.port))
+        print(f"Conectado ao servidor em {self.host}:{self.port}")
+        
+        t1 = threading.Thread(target=self.recv)
+        t1.daemon = True
+        t1.start()
+        
+        self.data = ""
 
-# Conecta ao servidor
-client_socket.connect((host, port))
-print(f"Conectado ao servidor em {host}:{port}")
-
-# Recebe a mensagem de boas-vindas do servidor
-welcome_message = client_socket.recv(1024)
-print(f"Servidor diz: {welcome_message.decode()}")
-
-# Loop para enviar mensagens para o servidor
-while True:
-    # Obtém a mensagem do usuário
-    message_to_send = input("Digite sua mensagem (ou 'exit' para sair): ")
-
-    # Envia a mensagem para o servidor
-    client_socket.sendall(message_to_send.encode())
-
-    # Verifica se o usuário quer sair
-    if message_to_send.lower() == 'exit':
-        break
-
-# Fecha o socket do cliente
-client_socket.close()
+    def connect(self):
+        pass
+    
+    def send(self, msg):
+        self.client_socket.sendall(json.dumps({"name": self.hostname, "msg": msg}).encode())
+    
+    # Fecha o socket do cliente
+    def close(self):
+        self.client_socket.close()
+        
+    def recv(self):
+        while True:
+            server_msg = self.client_socket.recv(1024)
+            return server_msg.decode()
