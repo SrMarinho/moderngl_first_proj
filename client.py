@@ -1,6 +1,7 @@
 import socket
 import threading
 import json
+import ast
 
 class Client:
     def __init__(self, host, port) -> None:
@@ -18,7 +19,7 @@ class Client:
         t1.daemon = True
         t1.start()
         
-        self.data = ""
+        self.data = None
 
     def connect(self):
         pass
@@ -31,6 +32,6 @@ class Client:
         self.client_socket.close()
         
     def recv(self):
-        while True:
-            server_msg = self.client_socket.recv(1024)
-            return server_msg.decode()
+        server_msg = self.client_socket.recv(1024)
+        self.data = ast.literal_eval(server_msg.decode())
+        # self.data = server_msg.decode()

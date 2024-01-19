@@ -81,6 +81,7 @@ if __name__ == '__main__':
     
     server = server.Server(HOST, PORT)
     server.add_route("get_scene", app.scene.toJson)
+    server.add_route("set_obj", app.scene.objects)
     
     # t1 = threading.Thread(target=server.msg_watcher, args=(app.scene.toJson(),))
     # t1.daemon = True

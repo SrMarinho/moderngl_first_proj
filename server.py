@@ -47,9 +47,13 @@ class Server:
             
             data = json.loads(client_message.decode())
             
-            print(self.routes[data["msg"]["function"]]())
-            # if data["msg"]["function"]:
-            #     client_socket.sendall(self.routes(data["msg"]["function"])())
+            if data["msg"]["function"]:
+                try:
+                    print(str(self.routes[data["msg"]["function"]]()))
+                    client_socket.sendall(str(self.routes[data["msg"]["function"]]()).encode())
+                except:
+                    pass
+            print(data)
         # Fecha o socket do cliente
         self.clients.remove(client_socket)
         
