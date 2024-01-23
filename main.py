@@ -1,4 +1,5 @@
 import sys
+import threading
 import pygame as pg
 import moderngl
 import numpy as np
@@ -6,11 +7,10 @@ from mesh import Mesh
 from scene import Scene
 from scene_renderer import SceneRenderer
 import dearpygui.dearpygui as dpg
-import socket
-import pickle
-import threading
 import server
-import json
+from pygame._sdl2 import Window
+import sys
+import subprocess
 
 class GraphicsEngine:
     def __init__(self, width=1280, height=720) -> None:
@@ -40,6 +40,7 @@ class GraphicsEngine:
         
         self.scene_renderer = SceneRenderer(self)
         
+        self.running = True
         # self.socket_server(self)
         
     
@@ -64,15 +65,42 @@ class GraphicsEngine:
         self.time = pg.time.get_ticks() * 0.001
     
     def run(self):
-        while True:
+        while self.running:
             self.get_time()
             self.events()
             self.update()
             self.render()
             self.delta_time = self.clock.tick(self.FPS)
-            
             pg.display.set_caption("FPS: " + str(round(self.clock.get_fps(), 2)))
     
+    def get_scene(self):
+        return self.scene.toJson()
+    
+    def set_obj(self, params):
+        return app.scene.objects[params['obj']]
+    
+    def set_obj_pos(self, params):
+        try:
+            obj = list(filter(lambda x: x.name == params['obj_name'], app.scene.objects))
+            obj = obj[0] if obj else None
+            field = list(params)[1]
+            index = list(params[field])
+            value = params[field][index[0]]
+            obj_attrib = getattr(obj, field)
+            obj_attrib[int(index[0])] = value
+            return True
+        except:
+            return False
+        
+    def get_win_setting(self):
+        return {'size': [app.width, app.height], 'position': Window.from_display_module().position}
+    
+    def exit(self):
+        self.running = False
+        
+    def gui(self):
+        subprocess.call('.\opengl\Scripts\python.exe gui.py')
+
 if __name__ == '__main__':
     HOST = "127.0.0.1"
     PORT = 12345
@@ -80,11 +108,16 @@ if __name__ == '__main__':
     app = GraphicsEngine(200, 200)
     
     server = server.Server(HOST, PORT)
-    server.add_route("get_scene", app.scene.toJson)
-    server.add_route("set_obj", app.scene.objects)
+    server.add_route("get_scene", app.get_scene)
+    server.add_route("set_obj", app.set_obj)
+    server.add_route("set_obj_pos", app.set_obj_pos)
+    server.add_route("get_win_setting", app.get_win_setting)
+    server.add_route("exit", app.exit)
     
-    # t1 = threading.Thread(target=server.msg_watcher, args=(app.scene.toJson(),))
-    # t1.daemon = True
-    # t1.start()
+    t1 = threading.Thread(target=app.gui)
+    t1.daemon = True
+    t1.start()
     
     app.run()
+    
+    sys.exit()

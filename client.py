@@ -2,6 +2,7 @@ import socket
 import threading
 import json
 import ast
+import sys
 
 class Client:
     def __init__(self, host, port) -> None:
@@ -15,23 +16,29 @@ class Client:
         self.client_socket.connect((self.host, self.port))
         print(f"Conectado ao servidor em {self.host}:{self.port}")
         
-        t1 = threading.Thread(target=self.recv)
-        t1.daemon = True
-        t1.start()
-        
-        self.data = None
+        self.data = {}
 
     def connect(self):
         pass
     
-    def send(self, msg):
-        self.client_socket.sendall(json.dumps({"name": self.hostname, "msg": msg}).encode())
+    def send(self, *args):
+        self.data = {}
+        if len(args) > 1:
+            self.client_socket.sendall(json.dumps({"hostname": self.hostname, "function": args[0], "params": args[1]}).encode())
+        else:
+            self.client_socket.sendall(json.dumps({"hostname": self.hostname, "function": args[0]}).encode())
+        if args[0] == 'exit':
+            self.close()
+            sys.exit()
+        return self.recv()
     
     # Fecha o socket do cliente
     def close(self):
         self.client_socket.close()
         
     def recv(self):
-        server_msg = self.client_socket.recv(1024)
-        self.data = ast.literal_eval(server_msg.decode())
-        # self.data = server_msg.decode()
+        server_msg = None
+        while server_msg == None:
+            server_msg = self.client_socket.recv(1024)
+            server_msg = ast.literal_eval(server_msg.decode())
+        return server_msg

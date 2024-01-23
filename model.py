@@ -8,6 +8,7 @@ from operations import *
 class BaseModel:
     def __init__(self, app, vao_name, pos=[0, 0, 0], rot=[0, 0, 0], scale=[1, 1, 1]):
         self.app = app
+        self.name = None
         self.pos = pos
         self.vao_name = vao_name
         self.rot = [np.radians(a) for a in rot]
@@ -27,6 +28,7 @@ class BaseModel:
         
     def toJson(self):
         return {
+            "name": self.name,
             "vao_name": self.vao_name,
             "pos": self.pos,
             "rot": self.rot,

@@ -1,6 +1,7 @@
 import socket
 import threading
 import json
+import sys
 
 class Server:
     def __init__(self, host, port) -> None:
@@ -22,7 +23,7 @@ class Server:
         server_socket.bind((self.host, self.port))
 
         # Habilita o servidor para aceitar conexões
-        server_socket.listen()
+        server_socket.listen(1)
 
         print(f"Aguardando conexões em {self.host}:{self.port}...")
 
@@ -47,13 +48,19 @@ class Server:
             
             data = json.loads(client_message.decode())
             
-            if data["msg"]["function"]:
-                try:
-                    print(str(self.routes[data["msg"]["function"]]()))
-                    client_socket.sendall(str(self.routes[data["msg"]["function"]]()).encode())
-                except:
-                    pass
-            print(data)
+            response = ''
+                
+            try:
+                if data['function'] in self.routes:
+                    if 'params' in data:
+                        response = self.routes[data['function']](data['params'])
+                    else:
+                        response = self.routes[data['function']]()
+                    client_socket.sendall(str(response).encode())
+                else:
+                    raise "Error 404" 
+            except:
+                raise Exception("Erro")
         # Fecha o socket do cliente
         self.clients.remove(client_socket)
         
@@ -71,3 +78,6 @@ class Server:
             
     def add_route(self, name, function):
         self.routes[name] = function
+        
+    def close(self):
+        self._thread_server.join()

@@ -48,11 +48,11 @@ void main() {
     
     color += fragColor;
 
-    light.position = vec3(5 * abs(cos(iTime)), 10, 10 * sin(iTime));
+    light.position = vec3(5 * cos(iTime), 2, 0);
     light.ambientColor = vec3(0.1, 0.1, 0.1);
     light.diffuseColor = vec3(0.45);
     light.specularColor = vec3(0.5);
-    light.specularExponent = 256;
+    light.specularExponent = 32;
     vec3 viewPos = vec3(0, 0, 0);
     
     color +=  illumination(light, viewPos);

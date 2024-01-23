@@ -106,8 +106,8 @@ class SphereVBO(BaseVBO):
         normals = []
         texCoords = []
 
-        sectorCount = 10
-        stackCount = 5
+        sectorCount = 30
+        stackCount = 20
 
         x, y, z, xy = 0.0, 0.0, 0.0, 0.0  # vertex position
         nx, ny, nz, lengthInv = 0.0, 0.0, 0.0, 1.0 / radius  # vertex normal
