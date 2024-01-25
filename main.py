@@ -18,16 +18,17 @@ class GraphicsEngine:
 
         self.width, self.height = width, height
 
-        self.screen = pg.display.set_mode((width, height), pg.OPENGL | pg.DOUBLEBUF, display=1)
+        self.screen = pg.display.set_mode((width, height), pg.OPENGL | pg.DOUBLEBUF | pg.NOFRAME, display=1)
         self.display = pg.Surface((self.width, self.height))
         self.ctx = moderngl.create_context()
         self.ctx.front_face = 'ccw'
         self.ctx.enable(flags=moderngl.DEPTH_TEST | moderngl.CULL_FACE)
         self.clock = pg.time.Clock()
         self.FPS = 60
-        
         self.time = pg.time.get_ticks()/1000
         self.delta_time = 0
+        
+        self.render_mode = moderngl.TRIANGLES
         
         self.fov = 90
         self.aspect_ratio = width / height
@@ -46,16 +47,22 @@ class GraphicsEngine:
     
     def events(self):
         for event in pg.event.get():
+            key = pg.key.get_pressed()
             if event.type == pg.QUIT or (event.type == pg.KEYDOWN and event.key == pg.K_ESCAPE):
                 pg.quit()
                 sys.exit()
-    
+                
+            if key[pg.K_8]:
+                self.render_mode = moderngl.LINES
+            if key[pg.K_9]:
+                self.render_mode = moderngl.TRIANGLES
+            
     def update(self):
         self.time = pg.time.get_ticks()/1000
         self.scene.update()
     
     def render(self):
-        self.ctx.clear(30/255, 30/255, 60/255)
+        self.ctx.clear(70/255, 70/255, 70/255)
         
         self.scene_renderer.render()
         
@@ -94,6 +101,21 @@ class GraphicsEngine:
         
     def get_win_setting(self):
         return {'size': [app.width, app.height], 'position': Window.from_display_module().position}
+    
+    def get_render_mode(self):
+        if self.render_mode == moderngl.LINES:
+            return 1
+        return 0
+
+    def set_render_mode(self, mode):
+        try:
+            if mode == '1':
+                self.render_mode == moderngl.LINES 
+            else:
+                self.render_mode == moderngl.TRIANGLES
+            return True
+        except:
+            return False
     
     def exit(self):
         self.running = False

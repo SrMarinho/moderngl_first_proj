@@ -13,7 +13,7 @@ class ShaderProgram:
         with open(f'shaders/{shader_program_name}.frag') as file:
             fragment_shader = file.read()
 
-        program = self.ctx.program(vertex_shader=vertex_shader, fragment_shader=fragment_shader)
+        program = self.ctx.program(vertex_shader=vertex_shader, tess_control_shader=, fragment_shader=fragment_shader)
         return program
 
     def destroy(self):

@@ -1,6 +1,6 @@
 from vbo import VBO
 from shader_program import ShaderProgram
-
+import moderngl as mgl
 
 class VAO:
     def __init__(self, ctx):

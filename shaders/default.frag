@@ -2,10 +2,10 @@
 
 in vec3 normal;
 in vec3 vertPos;
-flat in vec3 color;
 
 uniform vec2 u_resolution;
 uniform float iTime;
+uniform float render_mode;
 
 struct Light {
     vec3  position;
@@ -40,23 +40,25 @@ vec3 illumination(Light L, vec3 viewPos) {
 }
 
 void main() {
-    Light light;
-    vec3 color;
-    vec2 u_resolution = u_resolution;
-    vec3 vert = vertPos;
     vec3 fragColor = vec3(0.0);
-    
-    color += fragColor;
+    if (render_mode == 1.0){
+        gl_FragColor = vec4(0.0, 0.0, 0.0, 1.0);
+    } else {
+        Light light;
+        vec3 color;
+        vec2 u_resolution = u_resolution;
+        vec3 vert = vertPos;
+        
+        color += fragColor;
 
-    light.position = vec3(5 * cos(iTime), 2, 0);
-    light.ambientColor = vec3(0.1, 0.1, 0.1);
-    light.diffuseColor = vec3(0.45);
-    light.specularColor = vec3(0.5);
-    light.specularExponent = 32;
-    vec3 viewPos = vec3(0, 0, 0);
-    
-    color +=  illumination(light, viewPos);
-
-
-    gl_FragColor = vec4(color, 1.0);
+        light.position = vec3(5 * cos(iTime), 2, 0);
+        light.ambientColor = vec3(0.1, 0.1, 0.1);
+        light.diffuseColor = vec3(0.45);
+        light.specularColor = vec3(0.5);
+        light.specularExponent = 0;
+        vec3 viewPos = vec3(0, 0, 0);
+        
+        color +=  illumination(light, viewPos);
+        gl_FragColor = vec4(color, 1.0);
+    }
 }

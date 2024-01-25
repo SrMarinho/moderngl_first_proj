@@ -24,7 +24,8 @@ class BaseModel:
 
     def render(self):
         self.update()
-        self.vao.render()
+        
+        self.vao.render(mode=self.app.render_mode)
         
     def toJson(self):
         return {
@@ -195,6 +196,7 @@ class Teapot(ExtendedBaseModel):
             self.pos[2] += self.velocityZ
 
         # self.rot[1] += 0.5
+        self.program['render_mode'].value = 1 if self.app.render_mode == mgl.LINES else 0
         self.program['obj.position'].value = self.pos
         self.program['obj.rotation'].value = self.rot
         self.program['obj.scale'].value = self.scale
@@ -248,7 +250,3 @@ class Floor(ExtendedBaseModel):
             self.pos[2] += self.velocityZ
 
         # self.rot[1] += 0.5
-        self.program['obj.position'].value = self.pos
-        self.program['obj.rotation'].value = self.rot
-        self.program['obj.scale'].value = self.scale
-        self.program['iTime'].value = self.app.time

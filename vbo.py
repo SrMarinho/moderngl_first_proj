@@ -175,13 +175,13 @@ class TeapotVBO(BaseVBO):
         super().__init__(ctx)
         self.format = '3f 3f'
         self.attribs = ['in_normal', 'in_position']
-        self.axis = self.get_axis(self.get_vertex_data())
+        self.axis = [0, -1, 0]
         
 
-    @staticmethod
-    def get_vertex_data():
+    def get_vertex_data(self):
         objs = pywavefront.Wavefront('objects/teapot.obj', cache=True, parse=True)
         obj = objs.materials.popitem()[1]
         vertex_data = np.array(obj.vertices, dtype='f4')
-
+        
+        self.axis = self.get_axis(vertex_data)
         return vertex_data
