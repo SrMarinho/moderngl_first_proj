@@ -46,8 +46,8 @@ class ExtendedBaseModel(BaseModel):
 
     def on_init(self):
         # resolution
-        self.program['u_resolution'].value = [self.app.width, self.app.height]
-        self.program['m_proj'].value = create_perspective_matriz(self.app.fov,
+        # self.program['u_resolution'].value = [self.app.width, self.app.height]
+        self.program['projection_matrix'].value = create_perspective_matriz(self.app.fov,
                                                        self.app.aspect_ratio,
                                                        self.app.near,
                                                        self.app.far).reshape(16)
@@ -93,6 +93,7 @@ class Cube(ExtendedBaseModel):
             self.pos[2] += self.velocityZ
 
         # self.rot[1] += 0.5
+        self.program['render_mode'].value = 1 if self.app.render_mode == mgl.LINES else 0
         self.program['obj.position'].value = self.pos
         self.program['obj.rotation'].value = self.rot
         self.program['obj.scale'].value = self.scale
@@ -114,7 +115,7 @@ class Sphere(ExtendedBaseModel):
         self.program['obj.position'].value = self.pos
         self.program['obj.rotation'].value = self.rot
         self.program['obj.scale'].value = self.scale
-        self.program['obj.axis'].value = self.app.mesh.vao.vbo.vbos[self.vao_name].axis
+        # self.program['obj.axis'].value = self.app.mesh.vao.vbo.vbos[self.vao_name].axis
         
     def update(self):
         keys=pg.key.get_pressed()
@@ -144,10 +145,11 @@ class Sphere(ExtendedBaseModel):
             self.pos[2] += self.velocityZ
 
         # self.rot[1] += 0.5
+        # self.program['render_mode'].value = 1 if self.app.render_mode == mgl.LINES else 0
         self.program['obj.position'].value = self.pos
         self.program['obj.rotation'].value = self.rot
         self.program['obj.scale'].value = self.scale
-        self.program['iTime'].value = self.app.time
+        # self.program['iTime'].value = self.app.time
         
 class Teapot(ExtendedBaseModel):
     def __init__(self, app, vao_name='teapot', pos=[0, 0, 0], rot=[0, 0, 0], scale=[1, 1, 1]):

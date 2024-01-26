@@ -28,8 +28,10 @@ class GraphicsEngine:
         self.time = pg.time.get_ticks()/1000
         self.delta_time = 0
         
-        self.render_mode = moderngl.TRIANGLES
+        self.ctx.patch_vertices = 4
         
+        self.render_mode = moderngl.PATCHES
+         
         self.fov = 90
         self.aspect_ratio = width / height
         self.near = 0.1
@@ -54,6 +56,7 @@ class GraphicsEngine:
                 
             if key[pg.K_8]:
                 self.render_mode = moderngl.LINES
+                
             if key[pg.K_9]:
                 self.render_mode = moderngl.TRIANGLES
             

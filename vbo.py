@@ -96,7 +96,7 @@ class SphereVBO(BaseVBO):
         super().__init__(ctx)
         self.format = '3f 3f'
         self.attribs = ['in_normal', 'in_position']
-        self.axis = self.get_axis(self.get_vertex_data())
+        # self.axis = self.get_axis(self.get_vertex_data())
 
     def get_vertex_data(self):
         # np.set_printoptions(threshold=np.inf)

@@ -62,7 +62,7 @@ with dpg.window(pos=(0, 0), autosize=True, modal=True, no_close=True, no_title_b
         
     )
     
-    properties_collapsable_item = dpg.add_collapsing_header(label='properties', )
+    properties_collapsable_item = dpg.add_collapsing_header(label='properties', leaf=True)
     properties_collapsable_container = dpg.add_child_window(parent=properties_collapsable_item, height=250)
     #position
     dpg.add_text(
