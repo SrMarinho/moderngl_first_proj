@@ -30,6 +30,8 @@ class GraphicsEngine:
         
         self.ctx.patch_vertices = 4
         
+        self.ctx.wireframe = True
+        
         self.render_mode = moderngl.PATCHES
          
         self.fov = 90
@@ -102,6 +104,18 @@ class GraphicsEngine:
         except:
             return False
         
+    def set_obj_subdivision(self, params):
+        try:
+            print(params)
+            obj = list(filter(lambda x: x.name == params['obj_name'], app.scene.objects))
+            obj = obj[0] if obj else None
+            field = list(params)[1]
+            value = params[field]
+            setattr(obj, field, value)
+            return True
+        except:
+            return False
+        
     def get_win_setting(self):
         return {'size': [app.width, app.height], 'position': Window.from_display_module().position}
     
@@ -136,6 +150,7 @@ if __name__ == '__main__':
     server.add_route("get_scene", app.get_scene)
     server.add_route("set_obj", app.set_obj)
     server.add_route("set_obj_pos", app.set_obj_pos)
+    server.add_route("set_obj_subdivision", app.set_obj_subdivision)
     server.add_route("get_win_setting", app.get_win_setting)
     server.add_route("exit", app.exit)
     

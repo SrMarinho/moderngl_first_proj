@@ -1,0 +1,28 @@
+#version 410 core
+
+layout(vertices = 4) out;
+
+in vec3 normal[];
+// in vec4 vertPos;
+
+out vec3 norm[];
+// out vec4 vert_data;
+
+uniform float outerLevel;
+uniform float innerLevel;
+
+void main(void)
+{
+    gl_out[gl_InvocationID].gl_Position = gl_in[gl_InvocationID].gl_Position;
+    norm[gl_InvocationID] = normal[gl_InvocationID];
+    
+    if (gl_InvocationID == 0){
+        gl_TessLevelOuter[0] = outerLevel;
+        gl_TessLevelOuter[1] = outerLevel;
+        gl_TessLevelOuter[2] = outerLevel;
+        gl_TessLevelOuter[3] = outerLevel;
+
+        gl_TessLevelInner[0] = innerLevel;
+        gl_TessLevelInner[1] = innerLevel;
+    }
+}

@@ -7,8 +7,10 @@ class VBO:
     def __init__(self, ctx):
         self.vbos = {}
         self.vbos['cube'] = CubeVBO(ctx)
-        self.vbos['sphere'] = SphereVBO(ctx)
+        # self.vbos['sphere'] = SphereVBO(ctx)
         self.vbos['teapot'] = TeapotVBO(ctx)
+        self.vbos['triangle'] = TriangleVBO(ctx)
+        self.vbos['square'] = SquareVBO(ctx)
 
     def destroy(self):
         [vbo.destroy() for vbo in self.vbos.values()]
@@ -77,6 +79,12 @@ class CubeVBO(BaseVBO):
                    (3, 4, 5), (3, 5, 0),
                    (3, 7, 4), (3, 2, 7),
                    (0, 6, 1), (0, 5, 6)]
+        # indices = [(0, 2, 3), (0, 2, 1),
+        #            (3, 7, 2), (3, 7, 4),
+        #            (4, 6, 5), (4, 6, 7),
+        #            (5, 1, 0), (5, 1, 6),
+        #            (0, 4, 5), (0, 5, 3),
+        #            (1, 2, 6), (7, 2, 6)]
         vertex_data = self.get_data(vertices, indices)
     
         normals = [( 0, 0, 1) * 6,
@@ -96,7 +104,7 @@ class SphereVBO(BaseVBO):
         super().__init__(ctx)
         self.format = '3f 3f'
         self.attribs = ['in_normal', 'in_position']
-        # self.axis = self.get_axis(self.get_vertex_data())
+        self.axis = self.get_axis(self.get_vertex_data())
 
     def get_vertex_data(self):
         # np.set_printoptions(threshold=np.inf)
@@ -184,4 +192,77 @@ class TeapotVBO(BaseVBO):
         vertex_data = np.array(obj.vertices, dtype='f4')
         
         self.axis = self.get_axis(vertex_data)
+        return vertex_data
+    
+class TriangleVBO(BaseVBO):
+    def __init__(self, ctx):
+        super().__init__(ctx)
+        self.format = '3f 3f'
+        self.attribs = ['in_normal', 'in_position']
+        self.axis = [-0.5, -0.333, 0]
+        
+
+    def get_vertex_data(self):
+        vertices = [
+            [0, 0, 0],
+            [0.5, 1, 0],
+            [1, 0, 0]
+        ]
+        
+        indices = [
+            [0, 1, 2]
+        ]
+        
+        vertex_per_triangle = self.get_data(vertices, indices)
+        
+        normals = [
+            [0, 0, -1],
+            [0, 0, -1],
+            [0, 0, -1],
+        ]
+        
+        normal_per_triangle = self.get_data(normals, indices)
+        
+        vertex_data = np.hstack([normal_per_triangle, vertex_per_triangle])
+        
+        vertex_data = vertex_data.reshape(len(vertex_data) * 6)
+        
+        return vertex_data
+    
+class SquareVBO(BaseVBO):
+    def __init__(self, ctx):
+        super().__init__(ctx)
+        self.format = '3f 3f'
+        self.attribs = ['in_normal', 'in_position']
+        self.axis = [-0.5, -0.5, 0]
+        
+
+    def get_vertex_data(self):
+        vertices = [
+            [0, 1, 0],
+            [0, 0, 0],
+            [1, 1, 0],
+            [1, 0, 0],
+        ]
+        
+        indices = [
+            [0, 1, 2],
+            [3, 1, 2],
+        ]
+        
+        vertex_per_triangle = self.get_data(vertices, indices)
+        
+        normals = [
+            [0, 0, -1],
+            [0, 0, -1],
+            [0, 0, -1],
+            [0, 0, -1],
+        ]
+        
+        normal_per_triangle = self.get_data(normals, indices)
+        
+        vertex_data = np.hstack([normal_per_triangle, vertex_per_triangle])
+        
+        vertex_data = vertex_data.reshape(len(vertex_data) * 6)
+        
         return vertex_data

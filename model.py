@@ -19,6 +19,8 @@ class BaseModel:
         self.velocityX = 0.01
         self.velocityY = 0.01
         self.velocityZ = 0.01
+        self.innerLevel = 1.0
+        self.outerLevel = 1.0
 
     def update(self): ...
 
@@ -33,7 +35,9 @@ class BaseModel:
             "vao_name": self.vao_name,
             "pos": self.pos,
             "rot": self.rot,
-            "scale": self.scale
+            "scale": self.scale,
+            "innerLevel": self.innerLevel,
+            "outerLevel": self.outerLevel,
         }
 
 
@@ -63,6 +67,11 @@ class Cube(ExtendedBaseModel):
         self.program['obj.rotation'].value = self.rot
         self.program['obj.scale'].value = self.scale
         self.program['obj.axis'].value = self.app.mesh.vao.vbo.vbos[self.vao_name].axis
+        try:
+            self.program['innerLevel'].value = self.innerLevel
+            self.program['outerLevel'].value = self.outerLevel
+        except:
+            pass
         
         
     def update(self):
@@ -93,10 +102,15 @@ class Cube(ExtendedBaseModel):
             self.pos[2] += self.velocityZ
 
         # self.rot[1] += 0.5
-        self.program['render_mode'].value = 1 if self.app.render_mode == mgl.LINES else 0
+        # self.program['render_mode'].value = 1 if self.app.render_mode == mgl.LINES else 0
         self.program['obj.position'].value = self.pos
         self.program['obj.rotation'].value = self.rot
         self.program['obj.scale'].value = self.scale
+        try:
+            self.program['innerLevel'].value = self.innerLevel
+            self.program['outerLevel'].value = self.outerLevel
+        except:
+            pass
         self.program['iTime'].value = self.app.time
         
 class Sphere(ExtendedBaseModel):
@@ -198,15 +212,15 @@ class Teapot(ExtendedBaseModel):
             self.pos[2] += self.velocityZ
 
         # self.rot[1] += 0.5
-        self.program['render_mode'].value = 1 if self.app.render_mode == mgl.LINES else 0
+        # self.program['render_mode'].value = 1 if self.app.render_mode == mgl.LINES else 0
         self.program['obj.position'].value = self.pos
         self.program['obj.rotation'].value = self.rot
         self.program['obj.scale'].value = self.scale
         self.program['iTime'].value = self.app.time
             
             
-class Floor(ExtendedBaseModel):
-    def __init__(self, app, vao_name='teapot', pos=[0, 0, 0], rot=[0, 0, 0], scale=[1, 1, 1]):
+class Triangle(ExtendedBaseModel):
+    def __init__(self, app, vao_name='triangle', pos=[0, 0, 0], rot=[0, 0, 0], scale=[1, 1, 1]):
         super().__init__(app, vao_name, pos, rot, scale)
         self.pos = pos
         self.rot = rot
@@ -222,6 +236,8 @@ class Floor(ExtendedBaseModel):
         self.program['obj.rotation'].value = self.rot
         self.program['obj.scale'].value = self.scale
         self.program['obj.axis'].value = self.app.mesh.vao.vbo.vbos[self.vao_name].axis
+        self.program['innerLevel'].value = self.innerLevel
+        self.program['outerLevel'].value = self.outerLevel
         
         
     def update(self):
@@ -251,4 +267,66 @@ class Floor(ExtendedBaseModel):
         if keys[pg.K_s]:
             self.pos[2] += self.velocityZ
 
+        self.program['obj.position'].value = self.pos
+        self.program['obj.rotation'].value = self.rot
+        self.program['obj.scale'].value = self.scale
+        self.program['innerLevel'].value = self.innerLevel
+        self.program['outerLevel'].value = self.outerLevel
+        self.program['iTime'].value = self.app.time
+        # self.rot[1] += 0.5
+
+class Square(ExtendedBaseModel):
+    def __init__(self, app, vao_name='square', pos=[0, 0, 0], rot=[0, 0, 0], scale=[1, 1, 1]):
+        super().__init__(app, vao_name, pos, rot, scale)
+        self.pos = pos
+        self.rot = rot
+        self.scale = scale
+        
+        self.velocityX = 0.01
+        self.velocityY = 0.01
+        self.velocityZ = 0.01
+        
+        self.rotation_velocity = 1
+        
+        self.program['obj.position'].value = self.pos
+        self.program['obj.rotation'].value = self.rot
+        self.program['obj.scale'].value = self.scale
+        self.program['obj.axis'].value = self.app.mesh.vao.vbo.vbos[self.vao_name].axis
+        self.program['innerLevel'].value = self.innerLevel
+        self.program['outerLevel'].value = self.outerLevel
+        
+        
+    def update(self):
+        keys=pg.key.get_pressed()
+        if keys[pg.K_UP]:
+            self.rot[0] += 1
+        if keys[pg.K_DOWN]:
+            self.rot[0] -= 1
+        if keys[pg.K_LEFT]:
+            self.rot[1] += 1
+        if keys[pg.K_RIGHT]:
+            self.rot[1] -= 1
+            
+        
+        if keys[pg.K_a]:
+            self.pos[0] -= self.velocityX
+        if keys[pg.K_d]:
+            self.pos[0] += self.velocityX
+            
+        if keys[pg.K_q]:
+            self.pos[1] -= self.velocityY
+        if keys[pg.K_e]:
+            self.pos[1] += self.velocityY
+            
+        if keys[pg.K_w]:
+            self.pos[2] -= self.velocityZ
+        if keys[pg.K_s]:
+            self.pos[2] += self.velocityZ
+
+        self.program['obj.position'].value = self.pos
+        self.program['obj.rotation'].value = self.rot
+        self.program['obj.scale'].value = self.scale
+        self.program['innerLevel'].value = self.innerLevel
+        self.program['outerLevel'].value = self.outerLevel
+        self.program['iTime'].value = self.app.time
         # self.rot[1] += 0.5

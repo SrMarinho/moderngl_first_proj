@@ -1,9 +1,15 @@
 #version 410 core
 
-layout(quads, equal_spacing, ccw) in;
+// equal_spacing
+// fractional_odd_spacing
+// fractional_even_spacing
+layout(quads, equal_spacing , ccw) in;
 
 uniform mat4 projection_matrix;
 
+in vec3 norm[];
+
+out vec3 normal;
 
 struct Obj {
     vec3 position;
@@ -78,13 +84,28 @@ mat4 scale(float x, float y, float z)
 
 vec4 interpolate(vec4 v0, vec4 v1, vec4 v2, vec4 v3)
 {
-    vec4 a = mix(v0, v1, gl_TessCoord.x);
+    vec4 a = mix(v1, v0, gl_TessCoord.x);
     vec4 b = mix(v3, v2, gl_TessCoord.x);
     return mix(a, b, gl_TessCoord.y);
 }
 
+vec4 interpolate(vec4 v0, vec4 v1, vec4 v2)
+{
+    float u = gl_TessCoord.x;
+    float v = gl_TessCoord.y;
+    float w = gl_TessCoord.z;
+
+    vec3 point = (v0 * u + v1 * v + v2 * w).xyz;
+    return vec4(point, 1.0);
+}
+
 void main(){
-    // normal = normal_data;
+    normal = vec3(interpolate(
+        vec4(norm[0], 1.0),
+        vec4(norm[1], 1.0),
+        vec4(norm[2], 1.0),
+        vec4(norm[3], 1.0)
+    ));
     // vertPos = vert_data;
     float time = iTime;
 
@@ -105,5 +126,6 @@ void main(){
         1
     );
 
+    mat4 aaaap = projection_matrix;
     gl_Position = projection_matrix * view * p;
 }

@@ -15,6 +15,9 @@ def obj_selected(sender, data, user_data):
     dpg.set_item_user_data(scaleY, {'obj_name': data, 'scale': 1})
     dpg.set_item_user_data(scaleZ, {'obj_name': data, 'scale': 2})
     
+    dpg.set_item_user_data(innerTess, {'obj_name': data})
+    dpg.set_item_user_data(outerTess, {'obj_name': data})
+    
     #set slider value to position in scene
     dpg.set_value(positionX, scene['scene'][data]['pos'][0])
     dpg.set_value(positionY, scene['scene'][data]['pos'][1])
@@ -30,7 +33,8 @@ def obj_selected(sender, data, user_data):
     dpg.set_value(scaleY, scene['scene'][data]['scale'][1])
     dpg.set_value(scaleZ, scene['scene'][data]['scale'][2])
     
-    
+    dpg.set_value(innerTess, scene['scene'][data]['innerLevel'])
+    dpg.set_value(outerTess, scene['scene'][data]['innerLevel'])
     # user_data['client'].send({"function": {user_data['function'] : {"params": {"obj" : data}}}})
     
 def set_obj_pos(sender, data, user_data):
@@ -38,6 +42,10 @@ def set_obj_pos(sender, data, user_data):
     axis = user_data[obj_property]
     scene['scene'][user_data['obj_name']][obj_property][axis] = data
     sclient.send('set_obj_pos', {'obj_name': user_data['obj_name'], list(user_data)[1]: {user_data[list(user_data)[1]]: data}})
+    
+def set_obj_subdivision(sender, data, user_data):
+    obj_property = list(user_data)[1]
+    sclient.send('set_obj_subdivision', {'obj_name': user_data['obj_name'], user_data[obj_property]: data})
         
 
 HOST = "127.0.0.1"
@@ -52,8 +60,7 @@ win_settings = sclient.send('get_win_setting')
 guiWidth, guiHeight = 260, 400
 
 scene = sclient.send('get_scene')
-with dpg.window(label="teste"):
-    pass
+print(scene)
 with dpg.window(pos=(0, 0), autosize=True, modal=True, no_close=True, no_title_bar=True, no_move=True, no_scroll_with_mouse=True, no_scrollbar=True) as obj_properties:
     obj_selected_index = dpg.add_listbox(
         items=list(scene['scene']),
@@ -62,7 +69,7 @@ with dpg.window(pos=(0, 0), autosize=True, modal=True, no_close=True, no_title_b
         
     )
     
-    properties_collapsable_item = dpg.add_collapsing_header(label='properties', leaf=True)
+    properties_collapsable_item = dpg.add_collapsing_header(label='properties', leaf=False)
     properties_collapsable_container = dpg.add_child_window(parent=properties_collapsable_item, height=250)
     #position
     dpg.add_text(
@@ -164,6 +171,29 @@ with dpg.window(pos=(0, 0), autosize=True, modal=True, no_close=True, no_title_b
         user_data={'obj_name': dpg.get_value(obj_selected_index), 'scale': 2},
         parent=properties_collapsable_container
     )
+    
+    subdivision_collapsable_item = dpg.add_collapsing_header(label='subdivision', leaf=False)
+    subdivision_collapsable_container = dpg.add_child_window(parent=subdivision_collapsable_item, height=100)
+    
+    innerTess = dpg.add_slider_float(
+        label="inner",
+        default_value=scene['scene'][dpg.get_value(obj_selected_index)]['innerLevel'] if len(scene['scene']) > 0 else 1,
+        min_value=1,
+        max_value=20,
+        callback=set_obj_subdivision,
+        user_data={'obj_name': dpg.get_value(obj_selected_index), 'attrib': 'innerLevel'},
+        parent=subdivision_collapsable_container
+    )
+    outerTess = dpg.add_slider_float(
+        label="outer",
+        default_value=scene['scene'][dpg.get_value(obj_selected_index)]['outerLevel'] if len(scene['scene']) > 0 else 1,
+        min_value=1,
+        max_value=20,
+        callback=set_obj_subdivision,
+        user_data={'obj_name': dpg.get_value(obj_selected_index), 'attrib': 'outerLevel'},
+        parent=subdivision_collapsable_container
+    )
+    
 dpg.create_viewport(
     title='Custom Title', 
     width=guiWidth, height=guiHeight, 
