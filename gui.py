@@ -15,8 +15,8 @@ def obj_selected(sender, data, user_data):
     dpg.set_item_user_data(scaleY, {'obj_name': data, 'scale': 1})
     dpg.set_item_user_data(scaleZ, {'obj_name': data, 'scale': 2})
     
-    dpg.set_item_user_data(innerTess, {'obj_name': data})
-    dpg.set_item_user_data(outerTess, {'obj_name': data})
+    dpg.set_item_user_data(innerTess, {'obj_name': data, 'attrib': 'innerLevel'})
+    dpg.set_item_user_data(outerTess, {'obj_name': data, 'attrib': 'outerLevel'})
     
     #set slider value to position in scene
     dpg.set_value(positionX, scene['scene'][data]['pos'][0])
@@ -34,7 +34,7 @@ def obj_selected(sender, data, user_data):
     dpg.set_value(scaleZ, scene['scene'][data]['scale'][2])
     
     dpg.set_value(innerTess, scene['scene'][data]['innerLevel'])
-    dpg.set_value(outerTess, scene['scene'][data]['innerLevel'])
+    dpg.set_value(outerTess, scene['scene'][data]['outerLevel'])
     # user_data['client'].send({"function": {user_data['function'] : {"params": {"obj" : data}}}})
     
 def set_obj_pos(sender, data, user_data):
@@ -44,8 +44,11 @@ def set_obj_pos(sender, data, user_data):
     sclient.send('set_obj_pos', {'obj_name': user_data['obj_name'], list(user_data)[1]: {user_data[list(user_data)[1]]: data}})
     
 def set_obj_subdivision(sender, data, user_data):
-    obj_property = list(user_data)[1]
-    sclient.send('set_obj_subdivision', {'obj_name': user_data['obj_name'], user_data[obj_property]: data})
+    try:
+        obj_property = list(user_data)[1]
+        sclient.send('set_obj_subdivision', {'obj_name': user_data['obj_name'], user_data[obj_property]: data})
+    except:
+        pass
         
 
 HOST = "127.0.0.1"

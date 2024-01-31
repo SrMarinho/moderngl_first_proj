@@ -32,6 +32,8 @@ class GraphicsEngine:
         
         self.ctx.wireframe = True
         
+        # self.ctx.line_width = 5
+        
         self.render_mode = moderngl.PATCHES
          
         self.fov = 90
@@ -106,10 +108,11 @@ class GraphicsEngine:
         
     def set_obj_subdivision(self, params):
         try:
-            print(params)
             obj = list(filter(lambda x: x.name == params['obj_name'], app.scene.objects))
             obj = obj[0] if obj else None
             field = list(params)[1]
+            print(obj)
+            print(field)
             value = params[field]
             setattr(obj, field, value)
             return True
